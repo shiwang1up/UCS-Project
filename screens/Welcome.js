@@ -55,7 +55,8 @@ const WelcomeScreen = ({navigation}) => {
               </View>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.button, {backgroundColor: theme.button}]}>
+              style={[styles.button, {backgroundColor: theme.button}]}
+              onPress={() => navigation.navigate('DbView')}>
               <View style={styles.row}>
                 <Text style={[styles.buttonText, {color: theme.buttonText}]}>
                   Check Out
@@ -65,7 +66,6 @@ const WelcomeScreen = ({navigation}) => {
             </TouchableOpacity>
           </View>
         </View>
-        {/* <View style={styles.iconContainer} > */}
         <View style={[styles.iconContainer, {backgroundColor: theme.button}]}>
           <TouchableOpacity style={styles.iconButton}>
             <Icon name="person-outline" size={30} color={theme.icon} />
@@ -117,6 +117,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Arial',
     marginBottom: 70,
     // borderWidth: 2,
+    fontWeight:'600',
   },
   wrapper: {
     flexDirection: 'column',

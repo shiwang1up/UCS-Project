@@ -6,6 +6,7 @@ import WelcomeScreen from './screens/Welcome';
 import SplashScreen from './screens/SplashScreen';
 import EmployeeCheckin from './screens/EmployeeCheckin';
 import FaceRecog from './screens/FaceRecog';
+import UserScreen from './screens/UserScreen';
 const Stack = createNativeStackNavigator();
 
 const App = () => {
@@ -27,10 +28,10 @@ const App = () => {
     <ThemeProvider>
       <NavigationContainer>
         <Stack.Navigator screenOptions={{headerShown: false}}>
-          {/* <Stack.Navigator initialRouteName="Welcome"> */}
           <Stack.Screen name="Welcome" component={WelcomeScreen} />
           <Stack.Screen name="CheckIn" component={EmployeeCheckin} />
           <Stack.Screen name="FaceRecog" component={FaceRecog} />
+          <Stack.Screen name="DbView" component={UserScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     </ThemeProvider>
