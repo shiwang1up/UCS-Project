@@ -37,7 +37,7 @@ const EmployeeCheckin = ({navigation}) => {
         <View style={styles.overlay}>
           {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.brandText}>UCS</Text>
+            <Text style={[styles.brandText, {color: theme.text}]}>UCS</Text>
           </View>
           <TouchableOpacity
             style={styles.themeToggleButton}
@@ -94,7 +94,8 @@ const EmployeeCheckin = ({navigation}) => {
                   styles.button,
                   {backgroundColor: theme.button},
                   {borderColor: theme.border},
-                ]}>
+                ]}
+                onPress={() => navigation.navigate('FaceRecog')}>
                 <Image
                   source={require('../assets/face_recognition.webp')} // Face Recognition icon
                   style={styles.icon}
@@ -137,11 +138,12 @@ const styles = StyleSheet.create({
   header: {
     alignItems: 'flex-start',
     padding: 20,
+    // borderWidth:2,
   },
   brandText: {
-    fontSize: 24,
+    fontSize: 56,
     fontWeight: 'bold',
-    color: '#5F5F5F',
+    // color: '#5F5F5F',
   },
   mainContainer: {
     flex: 1,
@@ -165,7 +167,7 @@ const styles = StyleSheet.create({
     width: 250,
     height: 250,
     margin: 10,
-    borderWidth: 4,
+    borderWidth: 2,
     // borderColor: '#000',
     borderRadius: 10,
     backgroundColor: 'rgba(255, 255, 255, 0.7)', // Button transparency
@@ -209,6 +211,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent', // Adjust as needed
     padding: 10,
     borderRadius: 20,
+    // borderWidth:2,
   },
   iconContainer: {
     flexDirection: 'row',

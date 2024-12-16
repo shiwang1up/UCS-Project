@@ -43,7 +43,7 @@ const WelcomeScreen = ({navigation}) => {
       <View style={styles.wrapper}>
         <View style={[styles.greetingCon]}>
           <Text style={[styles.title, {color: theme.text}]}>Welcome</Text>
-          <View>
+          <View style={styles.buttonWrapper}>
             <TouchableOpacity
               style={[styles.button, {backgroundColor: theme.button}]}
               onPress={() => navigation.navigate('CheckIn')}>
@@ -99,17 +99,24 @@ const styles = StyleSheet.create({
   greetingCon: {
     alignItems: 'center',
     flexDirection: 'column',
-    justifyContent: 'space-between',
+    justifyContent: 'space-around',
     width: '100%',
     height: '85%',
     padding: 20,
-    borderWidth: 2,
+    // borderWidth: 2,
+  },
+  buttonWrapper: {
+    flexDirection: 'row',
+    // borderWidth: 2,
+    width: '70%',
+    alignItems: 'center',
+    justifyContent: 'space-around',
   },
   title: {
     fontSize: 96,
     fontFamily: 'Arial',
     marginBottom: 70,
-    borderWidth: 2,
+    // borderWidth: 2,
   },
   wrapper: {
     flexDirection: 'column',
@@ -122,7 +129,7 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     borderRadius: 30,
     marginBottom: 30,
-    borderWidth: 2,
+    // borderWidth: 2,
   },
   row: {
     flexDirection: 'row',
@@ -137,9 +144,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: '100%',
-    height:'15%',
+    height: '15%',
     padding: 20,
-    borderWidth: 2,
+    // borderWidth: 2,
   },
   iconButton: {
     alignItems: 'center',
@@ -162,8 +169,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent', // Adjust as needed
     padding: 10,
     borderRadius: 20,
-    zIndex:100,
-    borderWidth:2,
+    zIndex: 100,
+    // borderWidth:2,
   },
 });
 

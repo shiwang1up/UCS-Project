@@ -6,7 +6,7 @@ const ThemeContext = createContext();
 // Default light theme
 const lightTheme = {
   background: 'rgba(255, 255, 255, 0.7)',
-  text: 'black',
+  text: 'rgba(0, 0, 0, 0.7)',
   button: 'rgba(255, 255, 255, 0.6)',
   buttonText: 'black',
   icon: 'black',
@@ -16,7 +16,7 @@ const lightTheme = {
 // Dark theme
 const darkTheme = {
   background: 'rgba(0, 0, 0, 0.7)',
-  text: 'white',
+  text: 'rgba(255, 255, 255, 0.7)',
   button: 'rgba(0, 0, 0, 0.6)',
   buttonText: 'white',
   icon: 'white',
