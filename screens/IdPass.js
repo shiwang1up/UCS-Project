@@ -1,141 +1,139 @@
-import React, {useEffect, useState, useRef} from 'react';
+import React, {useState} from 'react';
 import {
   View,
-  Text,
   TouchableOpacity,
   StyleSheet,
-  Image,
+  KeyboardAvoidingView,
   Platform,
+  Alert,
+  Text,
 } from 'react-native';
-import {Camera, useCameraDevices} from 'react-native-vision-camera';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {useTheme} from '../context/ThemeProvider';
-const FaceRecog = ({navigation}) => {
-  const [timer, setTimer] = useState(5);
-  const [isScanning, setIsScanning] = useState(true);
-  const [capturedPhoto, setCapturedPhoto] = useState(null);
-  const cameraRef = useRef(null);
+import {TextInput} from 'react-native-gesture-handler';
+import {GestureHandlerRootView} from 'react-native-gesture-handler';
+import {getUserById, saveUser, updateCheckoutTime} from '../services/dbService';
+
+const IdPass = ({navigation, route}) => {
+  const {isCheckoutMode} = route.params || {};
   const {theme} = useTheme();
-  const devices = useCameraDevices();
-  const frontCamera = devices[1];
+  const [id, setId] = useState('');
+  const [isCheckedIn, setIsCheckedIn] = useState(false);
 
-  useEffect(() => {
-    (async () => {
-      const status = await Camera.requestCameraPermission();
-      if (status !== 'granted') {
-        console.warn('Camera permission denied');
-      }
-    })();
-  }, []);
-
-  useEffect(() => {
-    let countdown;
-    if (timer > 0 && isScanning) {
-      countdown = setTimeout(() => setTimer(prev => prev - 1), 1000);
-    } else if (timer === 0 && isScanning) {
-      handleTakePhoto();
+  const handleSubmit = () => {
+    if (!id) {
+      Alert.alert('Error', 'Please enter UserID');
+      return;
     }
-    return () => clearTimeout(countdown);
-  }, [timer, isScanning]);
-
-  const handleRetake = () => {
-    setTimer(5);
-    setIsScanning(true);
-    setCapturedPhoto(null); // Reset captured photo
-  };
-
-  const handleTakePhoto = async () => {
-    if (cameraRef.current) {
-      try {
-        const photo = await cameraRef.current.takePhoto({
-          flash: 'off',
-        });
-        console.log('Photo taken:', photo.path);
-
-        // Check the platform and handle the image path accordingly
-        let imagePath = photo.path;
-
-        // If on iOS, we may need to access the path differently
-        if (Platform.OS === 'ios') {
-          imagePath = `file://${photo.path}`;
+  
+    if (isCheckoutMode) {
+      getUserById(id, user => {
+        if (user) {
+          if (user.userid === id) {
+            const checkinTime = new Date(user.checkin);
+            const currentTime = new Date();
+            const timeDifference = (currentTime - checkinTime) / 1000 / 60;
+  
+            if (timeDifference < 10) {
+              const remainingTime = 10 - timeDifference;
+              Alert.alert(
+                'Error',
+                `You can only check out after 10 minutes of Check in. Please wait ${remainingTime.toFixed(0)} more minutes.`,
+              );
+              return;
+            }
+  
+            updateCheckoutTime(id, success => {
+              if (success) {
+                Alert.alert('Success', 'Checkout time updated successfully!');
+                setIsCheckedIn(true);
+                setTimeout(() => {
+                  navigation.navigate('Welcome');
+                }, 3000);
+              } else {
+                Alert.alert('Error', 'Failed to update checkout time. Please try again.');
+              }
+            });
+          } else {
+            Alert.alert('Error', 'Employee ID does not match. Please check your credentials.');
+          }
+        } else {
+          Alert.alert('Error', 'Employee not found. Please check your Employee ID.');
         }
-
-        setCapturedPhoto(imagePath); // Store the captured photo path
-        setIsScanning(false); // Stop scanning
-      } catch (error) {
-        console.error('Error taking photo:', error);
-      }
+      });
+    } else {
+      // Check if the user is already checked in
+      getUserById(id, user => {
+        if (user) {
+          if (user.userid === id && user.checkout === null) {
+            Alert.alert('Error', 'You are already checked in. Please check out first.');
+            return;
+          } else {
+            // Proceed to save the user if not checked in
+            saveUser (id, () => {
+              Alert.alert('Success', 'Check in successful!');
+              setIsCheckedIn(true);
+              setTimeout(() => {
+                navigation.navigate('Welcome');
+              }, 1000);
+            });
+          }
+        } else {
+          // If user not found, proceed to save the user
+          saveUser (id, () => {
+            Alert.alert('Success', 'Check in successful!');
+            setIsCheckedIn(true);
+            setTimeout(() => {
+              navigation.navigate('Welcome');
+            }, 1000);
+          });
+        }
+      });
     }
+    console.log('ID:', id);
   };
-
-  if (!frontCamera) {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.errorText}>No front camera available</Text>
-      </View>
-    );
-  }
 
   return (
-    <View style={styles.container}>
-      {/* Top Buttons */}
-      <View style={styles.topButtonsContainer}>
-        <TouchableOpacity
-          style={styles.topButtonBack}
-          onPress={() => navigation.goBack()}>
-          <Icon name="arrow-back" size={35} color={'#00b4d8'} />
-        </TouchableOpacity>
-        {!capturedPhoto ? (
-          <>
-            <Text style={styles.titleText}>Scanning</Text>
-          </>
-        ) : (
-          <Text style={styles.titleText}>Thank You</Text>
-        )}
-        <TouchableOpacity style={styles.topButtonForward}>
-          <Icon name="arrow-forward" size={35} color={'white'} />
-        </TouchableOpacity>
-      </View>
-
-      {!capturedPhoto ? (
-        <>
-          <View style={styles.cameraWrapper}>
-            <Camera
-              ref={cameraRef}
-              style={styles.camera}
-              device={frontCamera}
-              isActive={isScanning}
-              photo={true}
+    <GestureHandlerRootView style={{flex: 1}}>
+      <KeyboardAvoidingView
+        style={{flex: 1}}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={0}>
+        <View style={styles.container}>
+          <View style={styles.topButtonsContainer}>
+            <TouchableOpacity
+              style={styles.topButtonBack}
+              onPress={() => navigation.goBack()}>
+              <Icon name="arrow-back" size={35} color={'#00b4d8'} />
+            </TouchableOpacity>
+            {isCheckedIn ? (
+              <Text style={styles.titleText}>Thank You</Text>
+            ) : (
+              <Text style={[styles.titleText]}>
+                {isCheckoutMode ? 'Check Out' : 'Check In'}
+              </Text>
+            )}
+            <View>{/** hello  */}</View>
+          </View>
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              placeholder="Employee ID"
+              value={id}
+              onChangeText={text => {
+                if (/^\d*$/.test(text)) {
+                  setId(text);
+                }
+              }}
+              keyboardType="numeric"
             />
           </View>
-          {!capturedPhoto ? (
-            <>
-              <View style={[styles.retakeButton, {backgroundColor: '#00b4d8'}]}>
-                <Text style={[styles.buttonText, {color: 'white'}]}>
-                  Scanning
-                </Text>
-              </View>
-            </>
-          ) : (
-            <TouchableOpacity
-              style={styles.retakeButton}
-              onPress={handleRetake}>
-              <Text style={styles.buttonText}>Retake</Text>
-            </TouchableOpacity>
-          )}
-        </>
-      ) : (
-        // Display the captured photo
-        <>
-          <View style={styles.imageWrapper}>
-            <Image source={{uri: capturedPhoto}} style={styles.camera} />
-          </View>
-          <TouchableOpacity style={styles.retakeButton} onPress={handleRetake}>
-            <Text style={styles.buttonText}>Retake</Text>
+          <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+            <Text style={styles.buttonText}>Submit</Text>
           </TouchableOpacity>
-        </>
-      )}
-    </View>
+        </View>
+      </KeyboardAvoidingView>
+    </GestureHandlerRootView>
   );
 };
 
@@ -165,6 +163,26 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     borderWidth: 2,
     borderColor: '#00b4d8',
+  },
+  submitButton: {
+    backgroundColor: '#00b4d8',
+    paddingVertical: 16,
+    paddingHorizontal: 32,
+    borderRadius: 5,
+    marginTop: 20,
+  },
+  inputContainer: {
+    marginTop: 100, // Adjust as needed
+    width: '60%', // Adjust width as needed
+  },
+  input: {
+    height: 50,
+    borderColor: '#00b4d8',
+    borderWidth: 1,
+    borderRadius: 5,
+    paddingHorizontal: 10,
+    marginBottom: 20,
+    backgroundColor: 'white',
   },
   topButtonBack: {
     backgroundColor: 'transparent',
@@ -218,9 +236,9 @@ const styles = StyleSheet.create({
     fontSize: 36,
   },
   buttonText: {
-    color: '#00b4d8',
-    fontSize: 18,
-    fontWeight: '600',
+    color: 'white',
+    fontSize: 16,
+    textAlign: 'center',
   },
   capturedImageContainer: {
     justifyContent: 'center',
@@ -238,4 +256,4 @@ const styles = StyleSheet.create({
   errorText: {fontSize: 18, color: 'red'},
 });
 
-export default FaceRecog;
+export default IdPass;

@@ -10,8 +10,9 @@ import {
 import {useTheme} from '../context/ThemeProvider';
 import Icon from 'react-native-vector-icons/Ionicons';
 
-const EmployeeCheckin = ({navigation}) => {
+const EmployeeCheckin = ({navigation, route}) => {
   const {theme, toggleTheme} = useTheme();
+  const {isCheckoutMode} = route.params || {};
   const isDarkTheme = theme.buttonText === 'black';
   const images = [
     'https://wallpaperaccess.com/full/189167.jpg',
@@ -35,30 +36,45 @@ const EmployeeCheckin = ({navigation}) => {
       {/* Overlay with Transparency */}
       <View style={styles.container}>
         <View style={styles.overlay}>
-          {/* Header */}
-          <View style={styles.header}>
-            <Text style={[styles.brandText, {color: theme.text}]}>UCS</Text>
+          <View
+            style={[
+              styles.topButtonsContainer,
+              {backgroundColor: theme.background},
+            ]}>
+            <TouchableOpacity
+              style={[styles.topButtonBack]}
+              onPress={() => navigation.goBack()}>
+              <Icon name="arrow-back" size={35} color={'#00b4d8'} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.topButtonForward}
+              onPress={toggleTheme}>
+              <Icon
+                name={isDarkTheme ? 'moon-outline' : 'sunny-outline'} // Change this line
+                size={35}
+                color={theme.icon}
+              />
+            </TouchableOpacity>
           </View>
-          <TouchableOpacity
-            style={styles.themeToggleButton}
-            onPress={toggleTheme}>
-            <Icon
-              name={isDarkTheme ? 'moon-outline' : 'sunny-outline'} // Change this line
-              size={30}
-              color={theme.icon}
-            />
-          </TouchableOpacity>
+          <View style={styles.header}>
+            <Text style={[styles.brandText, {color: theme.text}]}>
+              {isCheckoutMode ? 'UCS - Check Out' : 'UCS - Check In'}
+            </Text>
+          </View>
+          {/* Header */}
 
           {/* Main Content */}
           <View style={styles.mainContainer}>
             <View style={styles.row}>
               {/* ID / Pass */}
+
               <TouchableOpacity
                 style={[
                   styles.button,
                   {backgroundColor: theme.button},
                   {borderColor: theme.border},
-                ]}>
+                ]}
+                onPress={() => navigation.navigate('IdPass', {isCheckoutMode})}>
                 <View style={styles.row1}>
                   <Image
                     source={require('../assets/pass.png')} // ID icon
@@ -66,7 +82,7 @@ const EmployeeCheckin = ({navigation}) => {
                     resizeMode="contain"
                   />
                   <Text style={[styles.buttonText, {color: theme.buttonText}]}>
-                    ID / Pass
+                    User ID
                   </Text>
                 </View>
               </TouchableOpacity>
@@ -114,6 +130,33 @@ const EmployeeCheckin = ({navigation}) => {
 };
 
 const styles = StyleSheet.create({
+  topButtonsContainer: {
+    position: 'absolute',
+    width: '100%',
+    top: 0,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    zIndex: 1,
+    // borderWidth: 2,
+    // borderColor: 'red',
+    padding: 20,
+  },
+  topButtonBack: {
+    backgroundColor: 'rgb(255, 255, 255)',
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    borderRadius: 50,
+    borderWidth: 2,
+    borderColor: '#00b4d8',
+  },
+  topButtonForward: {
+    backgroundColor: '#00b4d8',
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    borderRadius: 100,
+    borderWidth: 2,
+    borderColor: '#00b4d8',
+  },
   background: {
     flex: 1,
     justifyContent: 'center',
@@ -139,11 +182,11 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     padding: 20,
     // borderWidth:2,
+    zIndex: 5,
   },
   brandText: {
     fontSize: 56,
     fontWeight: 'bold',
-    // color: '#5F5F5F',
   },
   mainContainer: {
     flex: 1,
@@ -206,7 +249,6 @@ const styles = StyleSheet.create({
   },
   themeToggleButton: {
     position: 'absolute',
-    top: 20,
     right: 20,
     backgroundColor: 'transparent', // Adjust as needed
     padding: 10,

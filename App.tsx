@@ -7,6 +7,9 @@ import SplashScreen from './screens/SplashScreen';
 import EmployeeCheckin from './screens/EmployeeCheckin';
 import FaceRecog from './screens/FaceRecog';
 import UserScreen from './screens/UserScreen';
+import IdPass from './screens/IdPass';
+import Immersive from 'react-native-immersive'; // Import the immersive package
+
 const Stack = createNativeStackNavigator();
 
 const App = () => {
@@ -15,6 +18,7 @@ const App = () => {
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsSplashVisible(false);
+      Immersive.setImmersive(true); // Enable immersive mode after splash screen
     }, 3000);
 
     return () => clearTimeout(timer);
@@ -29,8 +33,9 @@ const App = () => {
       <NavigationContainer>
         <Stack.Navigator screenOptions={{headerShown: false}}>
           <Stack.Screen name="Welcome" component={WelcomeScreen} />
-          <Stack.Screen name="CheckIn" component={EmployeeCheckin} />
           <Stack.Screen name="FaceRecog" component={FaceRecog} />
+          <Stack.Screen name="IdPass" component={IdPass} />
+          <Stack.Screen name="CheckIn" component={EmployeeCheckin} />
           <Stack.Screen name="DbView" component={UserScreen} />
         </Stack.Navigator>
       </NavigationContainer>

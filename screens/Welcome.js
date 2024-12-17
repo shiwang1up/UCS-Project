@@ -33,7 +33,7 @@ const WelcomeScreen = ({navigation}) => {
       style={styles.background}
       imageStyle={styles.backgroundImage}>
       <StatusBar hidden={true} />
-      <TouchableOpacity style={styles.themeToggleButton} onPress={toggleTheme}>
+      <TouchableOpacity style={[styles.themeToggleButton,{backgroundColor:theme.button}]} onPress={toggleTheme}>
         <Icon
           name={isDarkTheme ? 'moon-outline' : 'sunny-outline'} // Change this line
           size={30}
@@ -56,7 +56,9 @@ const WelcomeScreen = ({navigation}) => {
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.button, {backgroundColor: theme.button}]}
-              onPress={() => navigation.navigate('DbView')}>
+              onPress={() =>
+                navigation.navigate('CheckIn', {isCheckoutMode: true})
+              }>
               <View style={styles.row}>
                 <Text style={[styles.buttonText, {color: theme.buttonText}]}>
                   Check Out
@@ -65,6 +67,13 @@ const WelcomeScreen = ({navigation}) => {
               </View>
             </TouchableOpacity>
           </View>
+        </View>
+        <View style={styles.datawrapper}>
+          <TouchableOpacity
+            style={[styles.iconWrapper,{backgroundColor:theme.button}]}
+            onPress={() => navigation.navigate('DbView')}>
+            <Icon name="newspaper-outline" size={30} color={theme.icon} />
+          </TouchableOpacity>
         </View>
         <View style={[styles.iconContainer, {backgroundColor: theme.button}]}>
           <TouchableOpacity style={styles.iconButton}>
@@ -88,6 +97,13 @@ const WelcomeScreen = ({navigation}) => {
 };
 
 const styles = StyleSheet.create({
+  datawrapper: {
+    padding: 10,
+    justifyContent: 'flex-end',
+    alignItems: 'flex-end',
+    marginTop: -80,
+    marginRight: 10,
+  },
   background: {
     flex: 1,
     justifyContent: 'center',
@@ -117,7 +133,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Arial',
     marginBottom: 70,
     // borderWidth: 2,
-    fontWeight:'600',
+    fontWeight: '600',
   },
   wrapper: {
     flexDirection: 'column',
@@ -145,9 +161,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: '100%',
-    height: '15%',
-    padding: 20,
-    // borderWidth: 2,
+    paddingHorizontal: 20,
+    paddingTop: 18,
+    paddingBottom: 10,
   },
   iconButton: {
     alignItems: 'center',
@@ -167,11 +183,18 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 20,
     right: 20,
-    backgroundColor: 'transparent', // Adjust as needed
-    padding: 10,
-    borderRadius: 20,
     zIndex: 100,
-    // borderWidth:2,
+    backgroundColor: '#00b4d8',
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    borderRadius: 100,
+  },
+  iconWrapper: {
+    padding: 15,
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    borderRadius: 100,
+    // backgroundColor: '#ff4d6d',
   },
 });
 
