@@ -25,66 +25,39 @@ const UserScreen = ({navigation}) => {
   const [masterData, setMasterData] = useState([]);
   const [isSyncingMaster, setIsSyncingMaster] = useState(false);
   const [isSyncingUser, setIsSyncingUser] = useState(false);
-  const [newData, setNewData] = useState([]);
 
   useEffect(() => {
-    const loadData = async () => {
-      createTable();
+    createTable();
 
-      getUsers(fetchedUsers => {
-        setUsers(fetchedUsers);
-      });
+    getUsers(fetchedUsers => {
+      setUsers(fetchedUsers);
+    });
 
-      try {
-        const fetchingMasterData = await getMasterData();
-        setMasterData(fetchingMasterData);
-      } catch (error) {
-        console.error('Error fetching master data:', error);
-      }
-
-      fetchNewData();
-    };
-
-    loadData();
+    getMasterData(fetchedMasterData => {
+      setMasterData(fetchedMasterData);
+    });
   }, []);
-  const fetchNewData = () => {
-    fetch('http://156.67.111.32:3020/api/Employee/transactions', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-      })
-      .then(data => {
-        setNewData(data); // Update the new data state
-      })
-      .catch(error => {});
-  };
 
   const handleSyncUser = () => {
-    handleSyncMaster();
     setIsSyncingUser(true);
+
     getUsers(fetchedUsers => {
+      // Prepare payload for syncing
       const payload = fetchedUsers
         .map(user => {
           if (!user.isSynced) {
             return {
-              employeeId: user.userid,
-              op: user.operation,
-              opDateTime: user.timing,
-              fingerPrintData: 'abcd',
+              userId: user.userid,
+              operation: user.operation, // 0 for checkout, 1 for checkin
+              timing: user.timing, // Assuming this is the timestamp for checkin/checkout
+              fingerPrintData: 'abcd', // Replace with actual fingerprint data if available
             };
           }
-          return null;
+          return null; // Exclude already synced users
         })
-        .filter(Boolean);
+        .filter(Boolean); // Remove null values
 
-      console.log(payload, 'Payload is this for handleSyncUser:');
+      console.log(payload, 'Payload is this:');
 
       if (payload.length === 0) {
         console.log('No users to sync. Request list cannot be empty.');
@@ -92,7 +65,7 @@ const UserScreen = ({navigation}) => {
         return;
       }
 
-      fetch('http://156.67.111.32:3020/api/Employee', {
+      fetch('http://156.67.111.32:3020/api/User/sync', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -106,25 +79,24 @@ const UserScreen = ({navigation}) => {
           return response.json();
         })
         .then(data => {
+          console.log('Response data:', data);
           if (Array.isArray(data)) {
             data.forEach(item => {
               if (item.status === 'Success') {
-                updateUserSyncStatus(item.employeeId, true, success => {
+                updateUserSyncStatus(item.userId, true, success => {
                   if (!success) {
-                    // console.log(
-                    //   `Failed to update user ${item.userId} sync status.`,
-                    // );
+                    console.log(
+                      `Failed to update user ${item.userId} sync status.`,
+                    );
                   }
                 });
               } else if (item.status === 'Error') {
-                // console.log(
-                //   `Error for user ${item.employeeId}: ${item.status}`,
-                // );
-                updateUserSyncStatus(item.employeeId, true, success => {
+                console.log(`Error for user ${item.userId}: ${item.message}`);
+                updateUserSyncStatus(item.userId, true, success => {
                   if (!success) {
-                    // console.log(
-                    //   `Failed to update user ${item.employeeId} sync status.`,
-                    // );
+                    console.log(
+                      `Failed to update user ${item.userId} sync status.`,
+                    );
                   }
                 });
               }
@@ -137,82 +109,60 @@ const UserScreen = ({navigation}) => {
           });
         })
         .catch(error => {
-          // console.log('Error during user sync: ', error);
+          console.log('Error during user sync: ', error);
         })
         .finally(() => {
           setIsSyncingUser(false);
         });
     });
+    handleSyncMaster();
   };
   const handleSyncMaster = () => {
-    setIsSyncingUser(true);
+    setIsSyncingMaster(true);
 
     fetchAndSaveMasterData()
-      .then(async () => {
-        try {
-          const fetchingMasterData = await getMasterData();
-
-          if (fetchingMasterData && fetchingMasterData.length > 0) {
-            setMasterData(fetchingMasterData);
-          } else {
-          }
-        } catch (error) {
-          console.error('Error fetching master data:', error);
-        }
+      .then(() => {
+        getMasterData(fetchedMasterData => {
+          setMasterData(fetchedMasterData);
+        });
       })
       .catch(error => {
         console.error('Error during master data sync: ', error);
       })
       .finally(() => {
-        setIsSyncingUser(false);
+        setIsSyncingMaster(false);
       });
   };
+
   const sections = [
     {
-      title: 'Offline Employee Data( Checkin / Checkout )',
-      data: [{isHeader: true}, ...users],
+      title: 'User List',
+      data: [
+        {isHeader: true}, // Placeholder for header
+        ...users,
+      ],
     },
     {
       title: 'Master Data List',
-      data: [{isHeader: true}, ...masterData],
-    },
-    {
-      title: 'Synced Server Data List',
-      data: [{isHeader: true}, ...newData],
+      data: [
+        {isHeader: true}, // Placeholder for header
+        ...masterData,
+      ],
     },
   ];
 
-  const renderNewTableHeader = () => (
-    <View style={[styles.tableHeader, styles.table]}>
-      <Text style={styles.tableHeaderCell}>Master ID</Text>
-      <Text style={styles.tableHeaderCell}>Employee ID</Text>
-      <Text style={styles.tableHeaderCell}>Employee Name</Text>
-      <Text style={styles.tableHeaderCell}>Fingerprint Data</Text>
-      <Text style={styles.tableHeaderCell}>Last Transaction Date</Text>
-      {/* Add more headers as needed */}
-    </View>
-  );
-
   const renderItem = ({item, section}) => {
     if (item.isHeader) {
-      return section.title === 'Offline Employee Data( Checkin / Checkout )'
+      return section.title === 'User List'
         ? renderUserTableHeader()
-        : section.title === 'Master Data List'
-        ? renderMasterTableHeader()
-        : renderNewTableHeader(); // Render new table header
+        : renderMasterTableHeader();
     }
 
-    if (section.title === 'Offline Employee Data( Checkin / Checkout )') {
+    if (section.title === 'User List') {
       return (
         <View style={styles.tableRow}>
           <Text style={styles.tableCell}>{item.userid}</Text>
-          <Text style={styles.tableCell}>
-            {item.operation === '1'
-              ? 'Check in'
-              : item.operation === '0'
-              ? 'Check out'
-              : 'Unknown'}
-          </Text>
+          <Text style={styles.tableCell}>{item.operation}</Text>
           <Text style={styles.tableCell}>{item.timing}</Text>
           <Text style={styles.tableCell}>{item.isSynced ? 'Yes' : 'No'}</Text>
         </View>
@@ -221,22 +171,10 @@ const UserScreen = ({navigation}) => {
       return (
         <View style={styles.tableRow}>
           <Text style={styles.tableCell}>{item.masterId}</Text>
-          <Text style={styles.tableCell}>{item.employeeId}</Text>
-          <Text style={styles.tableCell}>{item.employeename}</Text>
+          <Text style={styles.tableCell}>{item.userId}</Text>
+          <Text style={styles.tableCell}>{item.username}</Text>
           <Text style={styles.tableCell}>{item.fingerPrintData}</Text>
           <Text style={styles.tableCell}>{item.lastTransactionDate}</Text>
-        </View>
-      );
-    } else if (section.title === 'Synced Server Data List') {
-      return (
-        <View style={styles.tableRow}>
-          <Text style={styles.tableCell}>{item.employeeId}</Text>
-          <Text style={styles.tableCell}>{item.operationType}</Text>
-          <Text style={styles.tableCell}>{item.opDateTime}</Text>
-          <Text style={styles.tableCell}>{item.masterData.employeename}</Text>
-          <Text style={styles.tableCell}>
-            {item.masterData.lastTransactionDate}
-          </Text>
         </View>
       );
     }
@@ -244,8 +182,8 @@ const UserScreen = ({navigation}) => {
   };
 
   const renderUserTableHeader = () => (
-    <View style={[styles.tableHeader, styles.table]}>
-      <Text style={styles.tableHeaderCell}>Employee ID</Text>
+    <View style={styles.tableHeader}>
+      <Text style={styles.tableHeaderCell}>User ID</Text>
       <Text style={styles.tableHeaderCell}>Operation</Text>
       <Text style={styles.tableHeaderCell}>Timing</Text>
       <Text style={styles.tableHeaderCell}>Is Synced</Text>
@@ -253,14 +191,15 @@ const UserScreen = ({navigation}) => {
   );
 
   const renderMasterTableHeader = () => (
-    <View style={[styles.tableHeader, styles.table]}>
+    <View style={styles.tableHeader}>
       <Text style={styles.tableHeaderCell}>Master ID</Text>
-      <Text style={styles.tableHeaderCell}>Employee ID</Text>
-      <Text style={styles.tableHeaderCell}>Employee Name</Text>
+      <Text style={styles.tableHeaderCell}>User ID</Text>
+      <Text style={styles.tableHeaderCell}>Username</Text>
       <Text style={styles.tableHeaderCell}>Fingerprint Data</Text>
       <Text style={styles.tableHeaderCell}>Last Transaction Date</Text>
     </View>
   );
+
   const renderSectionHeader = ({section: {title}}) => (
     <Text style={styles.header}>{title}</Text>
   );
@@ -284,31 +223,32 @@ const UserScreen = ({navigation}) => {
           </View>
         )}
         <SafeAreaView style={styles.mainContent}>
-          <View>
-            <SectionList
-              sections={sections}
-              keyExtractor={(item, index) => {
-                if (item.isHeader) {
-                  return `header-${index}`;
-                }
-                return item.userid
-                  ? `${item.userid}-${index}` // Combine userid with index
-                  : `${item.masterId}-${index}`; // Combine masterId with index
-              }}
-              renderItem={renderItem}
-              renderSectionHeader={renderSectionHeader}
-              ListHeaderComponent={
-                <TouchableOpacity
-                  style={{
-                    padding: 8,
-                    alignSelf: 'flex-end',
-                  }}
-                  onPress={() => handleSyncUser()}>
-                  <Icon name="sync" size={30} />
-                </TouchableOpacity>
+          <SectionList
+            style={styles.table}
+            sections={sections}
+            keyExtractor={(item, index) => {
+              // Check if the item is a header
+              if (item.isHeader) {
+                return `header-${index}`; // Return a unique key for header items
               }
-            />
-          </View>
+              // Return the userId or masterId for regular items
+              return item.userid
+                ? item.userid.toString()
+                : item.masterId.toString();
+            }}
+            renderItem={renderItem}
+            renderSectionHeader={renderSectionHeader}
+            ListHeaderComponent={
+              <TouchableOpacity
+                style={{
+                  padding: 8,
+                  alignSelf: 'flex-end',
+                }}
+                onPress={() => handleSyncUser()}>
+                <Icon name="sync" size={30} color={'#00b4d8'} />
+              </TouchableOpacity>
+            }
+          />
         </SafeAreaView>
       </View>
     </GestureHandlerRootView>
@@ -362,7 +302,7 @@ const styles = StyleSheet.create({
   },
   mainContent: {
     marginTop: 100,
-    padding: 10,
+    padding: 20,
   },
   topButtonsContainer: {
     position: 'absolute',
@@ -400,13 +340,11 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     marginVertical: 10,
-    marginBottom: 10,
   },
   table: {
     borderWidth: 1,
     borderColor: '#ccc',
-    // marginBottom: 20,
-    // padding:10,
+    marginBottom: 20,
   },
   tableHeader: {
     flexDirection: 'row',

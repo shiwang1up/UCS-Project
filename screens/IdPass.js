@@ -12,7 +12,12 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import {useTheme} from '../context/ThemeProvider';
 import {TextInput} from 'react-native-gesture-handler';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
-import {getUserById, saveUser, updateCheckoutTime} from '../services/dbService';
+import {
+  getLatestOperation,
+  getUserById,
+  saveUser,
+  updateCheckoutTime,
+} from '../services/dbService';
 
 const IdPass = ({navigation, route}) => {
   const {isCheckoutMode} = route.params || {};
@@ -25,72 +30,97 @@ const IdPass = ({navigation, route}) => {
       Alert.alert('Error', 'Please enter UserID');
       return;
     }
-  
-    if (isCheckoutMode) {
-      getUserById(id, user => {
-        if (user) {
-          if (user.userid === id) {
-            const checkinTime = new Date(user.checkin);
-            const currentTime = new Date();
-            const timeDifference = (currentTime - checkinTime) / 1000 / 60;
-  
-            if (timeDifference < 10) {
-              const remainingTime = 10 - timeDifference;
-              Alert.alert(
-                'Error',
-                `You can only check out after 10 minutes of Check in. Please wait ${remainingTime.toFixed(0)} more minutes.`,
-              );
-              return;
-            }
-  
-            updateCheckoutTime(id, success => {
-              if (success) {
-                Alert.alert('Success', 'Checkout time updated successfully!');
-                setIsCheckedIn(true);
-                setTimeout(() => {
-                  navigation.navigate('Welcome');
-                }, 3000);
-              } else {
-                Alert.alert('Error', 'Failed to update checkout time. Please try again.');
-              }
-            });
-          } else {
-            Alert.alert('Error', 'Employee ID does not match. Please check your credentials.');
-          }
-        } else {
-          Alert.alert('Error', 'Employee not found. Please check your Employee ID.');
+
+    const operation = isCheckoutMode ? 0 : 1;
+    const timing = new Date().toISOString();
+
+    if (!isCheckoutMode) {
+      // Check the latest operation before allowing check-in
+      getLatestOperation(id, latestOperation => {
+        if (latestOperation === '1') {
+          Alert.alert(
+            'Error',
+            'You are already checked in. Please check out first.',
+          );
+          return; // Prevent further execution
         }
-      });
-    } else {
-      // Check if the user is already checked in
-      getUserById(id, user => {
-        if (user) {
-          if (user.userid === id && user.checkout === null) {
-            Alert.alert('Error', 'You are already checked in. Please check out first.');
-            return;
-          } else {
-            // Proceed to save the user if not checked in
-            saveUser (id, () => {
-              Alert.alert('Success', 'Check in successful!');
-              setIsCheckedIn(true);
-              setTimeout(() => {
-                navigation.navigate('Welcome');
-              }, 1000);
-            });
-          }
-        } else {
-          // If user not found, proceed to save the user
-          saveUser (id, () => {
+
+        // Proceed with check-in
+        saveUser(
+          id,
+          operation,
+          timing,
+          () => {
             Alert.alert('Success', 'Check in successful!');
             setIsCheckedIn(true);
             setTimeout(() => {
               navigation.navigate('Welcome');
             }, 1000);
-          });
+          },
+          errorMessage => {
+            Alert.alert('Error', errorMessage);
+          },
+        );
+      });
+    } else {
+      // Checkout logic
+      getLatestOperation(id, latestOperation => {
+        if (latestOperation !== '1') {
+          Alert.alert('Error', 'You must be checked in to check out.');
+          return; // Prevent further execution
         }
+
+        // Proceed with checkout
+        getUserById(id, user => {
+          if (user) {
+            if (user.userid === id) {
+              const checkinTime = new Date(user.checkin);
+              const currentTime = new Date();
+              const timeDifference = (currentTime - checkinTime) / 1000 / 60;
+
+              // Uncomment the following block if you want to enforce the 10-minute rule
+              // if (timeDifference < 10) {
+              //   const remainingTime = 10 - timeDifference;
+              //   Alert.alert(
+              //     'Error',
+              //     `You can only check out after 10 minutes of Check in. Please wait ${remainingTime.toFixed(0)} more minutes.`,
+              //   );
+              //   return;
+              // }
+
+              saveUser(
+                id,
+                operation,
+                timing,
+                () => {
+                  Alert.alert('Success', 'Checkout time updated successfully!');
+                  setIsCheckedIn(true);
+                  setTimeout(() => {
+                    navigation.navigate('Welcome');
+                  }, 3000);
+                },
+                errorMessage => {
+                  Alert.alert(
+                    'Error',
+                    'Failed to update checkout time. Please try again.',
+                  );
+                },
+              );
+            } else {
+              Alert.alert(
+                'Error',
+                'Employee ID does not match. Please check your credentials.',
+              );
+            }
+          } else {
+            Alert.alert(
+              'Error',
+              'Employee not found. Please check your Employee ID.',
+            );
+          }
+        });
       });
     }
-    console.log('ID:', id);
   };
 
   return (
