@@ -77,7 +77,11 @@ const EmployeeCheckin = ({navigation, route}) => {
                 onPress={() => navigation.navigate('IdPass', {isCheckoutMode})}>
                 <View style={styles.row1}>
                   <Image
-                    source={require('../assets/pass.png')} // ID icon
+                    source={
+                      isDarkTheme
+                        ? require('../assets/pass.png')
+                        : require('../assets/pass1.png')
+                    }
                     style={styles.icon}
                     resizeMode="contain"
                   />
@@ -95,7 +99,11 @@ const EmployeeCheckin = ({navigation, route}) => {
                   {borderColor: theme.border},
                 ]}>
                 <Image
-                  source={require('../assets/fingerprint.webp')} // Fingerprint icon
+                 source={
+                  isDarkTheme
+                    ? require('../assets/fingerprint.webp')
+                    : require('../assets/fingerprint1.webp')
+                }
                   style={styles.icon}
                   resizeMode="contain"
                 />
@@ -113,7 +121,11 @@ const EmployeeCheckin = ({navigation, route}) => {
                 ]}
                 onPress={() => navigation.navigate('FaceRecog')}>
                 <Image
-                  source={require('../assets/face_recognition.webp')} // Face Recognition icon
+                  source={
+                    isDarkTheme
+                      ? require('../assets/face_recognition.webp')
+                      : require('../assets/face_recognition1.webp')
+                  }
                   style={styles.icon}
                   resizeMode="contain"
                 />
