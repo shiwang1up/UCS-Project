@@ -10,7 +10,10 @@ import {
 import {Camera, useCameraDevices} from 'react-native-vision-camera';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {useTheme} from '../context/ThemeProvider';
-const FaceRecog = ({navigation}) => {
+import gifSource from '../assets/fingerprint_animation.gif';
+import FastImage from 'react-native-fast-image';
+
+const FingerAuth = ({navigation}) => {
   const [timer, setTimer] = useState(5);
   const [isScanning, setIsScanning] = useState(true);
   const [capturedPhoto, setCapturedPhoto] = useState(null);
@@ -20,62 +23,16 @@ const FaceRecog = ({navigation}) => {
   const frontCamera = devices[1];
 
   useEffect(() => {
-    (async () => {
-      const status = await Camera.requestCameraPermission();
-      if (status !== 'granted') {
-        console.warn('Camera permission denied');
-      }
-    })();
-  }, []);
-
-  useEffect(() => {
     let countdown;
     if (timer > 0 && isScanning) {
       countdown = setTimeout(() => setTimer(prev => prev - 1), 1000);
     } else if (timer === 0 && isScanning) {
-      handleTakePhoto();
+      // Handle the logic when the timer reaches 0
+      // For example, you might want to capture the photo or stop scanning
+      setIsScanning(false); // Stop scanning after the timer ends
     }
     return () => clearTimeout(countdown);
   }, [timer, isScanning]);
-
-  const handleRetake = () => {
-    setTimer(5);
-    setIsScanning(true);
-    setCapturedPhoto(null); // Reset captured photo
-  };
-
-  const handleTakePhoto = async () => {
-    if (cameraRef.current) {
-      try {
-        const photo = await cameraRef.current.takePhoto({
-          flash: 'off',
-        });
-        console.log('Photo taken:', photo.path);
-
-        // Check the platform and handle the image path accordingly
-        let imagePath = photo.path;
-
-        // If on iOS, we may need to access the path differently
-        if (Platform.OS === 'ios') {
-          imagePath = `file://${photo.path}`;
-        }
-
-        setCapturedPhoto(imagePath); // Store the captured photo path
-        setIsScanning(false); // Stop scanning
-      } catch (error) {
-        console.error('Error taking photo:', error);
-      }
-    }
-  };
-
-  if (!frontCamera) {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.errorText}>No front camera available</Text>
-      </View>
-    );
-  }
-
   return (
     <View style={styles.container}>
       {/* Top Buttons */}
@@ -85,61 +42,41 @@ const FaceRecog = ({navigation}) => {
           onPress={() => navigation.goBack()}>
           <Icon name="arrow-back" size={35} color={'#00b4d8'} />
         </TouchableOpacity>
-        {!capturedPhoto ? (
-          <>
-            <Text style={styles.titleText}>Scanning</Text>
-          </>
-        ) : (
-          <Text style={styles.titleText}>Thank You</Text>
-        )}
+
+        <Text style={styles.titleText}>Finger Print Authentication</Text>
+
         <View>
           {/* <Icon name="arrow-forward" size={35} color={'white'} /> */}
         </View>
       </View>
+      {/* Top Buttons */}
+      <View style={styles.content}>
+        <View style={styles.cameraWrapper}>
+          <FastImage
+            source={gifSource} // Use FastImage for the GIF
+            style={styles.gif}
+            resizeMode={FastImage.resizeMode.stretch} // Adjust resizeMode as needed
+          />
+        </View>
 
-      {!capturedPhoto ? (
-        <>
-          <View style={styles.cameraWrapper}>
-            <Camera
-              ref={cameraRef}
-              style={styles.camera}
-              device={frontCamera}
-              isActive={isScanning}
-              photo={true}
-            />
-          </View>
-          {!capturedPhoto ? (
-            <>
-              <View style={[styles.retakeButton, {backgroundColor: '#00b4d8'}]}>
-                <Text style={[styles.buttonText, {color: 'white'}]}>
-                  Scanning
-                </Text>
-              </View>
-            </>
-          ) : (
-            <TouchableOpacity
-              style={styles.retakeButton}
-              onPress={handleRetake}>
-              <Text style={styles.buttonText}>Retake</Text>
-            </TouchableOpacity>
-          )}
-        </>
-      ) : (
-        // Display the captured photo
-        <>
-          <View style={styles.imageWrapper}>
-            <Image source={{uri: capturedPhoto}} style={styles.camera} />
-          </View>
-          <TouchableOpacity style={styles.retakeButton} onPress={handleRetake}>
-            <Text style={styles.buttonText}>Retake</Text>
-          </TouchableOpacity>
-        </>
-      )}
+        <View style={[styles.retakeButton, {backgroundColor: '#00b4d8'}]}>
+          <Text style={[styles.buttonText, {color: 'white'}]}>Use Fingerprint Sensor</Text>
+        </View>
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  content: {
+    marginTop:'8%',
+    height: '82%',
+    width: '100%',
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    // borderWidth:2,
+  },
   container: {
     flex: 1,
     justifyContent: 'center',
@@ -191,17 +128,20 @@ const styles = StyleSheet.create({
     height: 500,
     borderRadius: 400,
     overflow: 'hidden',
-    borderWidth: 2,
+    // borderWidth: 2,
     borderColor: '#00b4d8',
     backgroundColor: 'rgba(0,0,0,0.2)',
   },
-  camera: {
+  gifWrapper: {
     width: 500,
-    height: 500,
+    height: 900,
     borderRadius: 400,
     overflow: 'hidden',
-    // borderWidth: 2,
     borderColor: '#ccc',
+  },
+  gif: {
+    width: '100%',
+    height: '100%',
   },
   retakeButton: {
     backgroundColor: 'white',
@@ -211,7 +151,7 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     borderColor: '#00b4d8',
     zIndex: 10,
-    marginTop: -25,
+    marginTop: 20,
   },
   titleText: {
     color: '#00b4d8',
@@ -238,4 +178,4 @@ const styles = StyleSheet.create({
   errorText: {fontSize: 18, color: 'red'},
 });
 
-export default FaceRecog;
+export default FingerAuth;

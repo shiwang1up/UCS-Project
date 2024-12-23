@@ -77,6 +77,7 @@ const addIsSyncedColumn = () => {
 };
 
 const saveUser = (userid, operation, timing, onSuccess, onError) => {
+  console.log(timing, 'Saved Timing in DB');
   const isSynced = false;
 
   db.transaction(tx => {

@@ -12,18 +12,41 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import {useTheme} from '../context/ThemeProvider';
 import {TextInput} from 'react-native-gesture-handler';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
-import {
-  getLatestOperation,
-  getUserById,
-  saveUser,
-  updateCheckoutTime,
-} from '../services/dbService';
+import {getLatestOperation, getUserById, saveUser} from '../services/dbService';
 
 const IdPass = ({navigation, route}) => {
   const {isCheckoutMode} = route.params || {};
   const {theme} = useTheme();
   const [id, setId] = useState('');
   const [isCheckedIn, setIsCheckedIn] = useState(false);
+
+  const formatDate = isoString => {
+    const date = new Date(isoString);
+
+    const options = {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+    };
+    const formattedDate = date.toLocaleString('en-US', options);
+
+    const [month, day, year, time] = formattedDate.split(/, | /);
+
+    const suffix =
+      day.endsWith('1') && day !== '11'
+        ? 'st'
+        : day.endsWith('2') && day !== '12'
+        ? 'nd'
+        : day.endsWith('3') && day !== '13'
+        ? 'rd'
+        : 'th';
+
+    return `${month} ${day}${suffix}, ${year}\nat ${time}`;
+  };
 
   const handleSubmit = () => {
     if (!id) {
@@ -34,6 +57,7 @@ const IdPass = ({navigation, route}) => {
     const operation = isCheckoutMode ? 0 : 1;
     const timing = new Date().toISOString();
 
+    // console.log(timing,"tm")
     if (!isCheckoutMode) {
       // Check the latest operation before allowing check-in
       getLatestOperation(id, latestOperation => {
@@ -51,11 +75,16 @@ const IdPass = ({navigation, route}) => {
           operation,
           timing,
           () => {
-            Alert.alert('Success', 'Check in successful!');
+            const successMessage = `Check in successful !!\nOn ${timing}!`;
+            // Alert.alert('Success', successMessage);
             setIsCheckedIn(true);
-            setTimeout(() => {
-              navigation.navigate('Welcome');
-            }, 1000);
+            // Navigate to PromptPage with additional data
+            navigation.navigate('PromptPage', {
+              isCheckoutMode: false,
+              timing: timing,
+              id: id,
+              alertMessage: successMessage,
+            });
           },
           errorMessage => {
             Alert.alert('Error', errorMessage);
@@ -93,11 +122,16 @@ const IdPass = ({navigation, route}) => {
                 operation,
                 timing,
                 () => {
-                  Alert.alert('Success', 'Checkout time updated successfully!');
+                  const successMessage = `Checkout time updated successfully !!\nOn ${timing}!`;
+                  // Alert.alert('Success', successMessage);
                   setIsCheckedIn(true);
-                  setTimeout(() => {
-                    navigation.navigate('Welcome');
-                  }, 3000);
+                  // Navigate to PromptPage with additional data
+                  navigation.navigate('PromptPage', {
+                    isCheckoutMode: true,
+                    timing: timing,
+                    id: id,
+                    alertMessage: successMessage,
+                  });
                 },
                 errorMessage => {
                   Alert.alert(

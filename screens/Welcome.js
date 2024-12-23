@@ -33,7 +33,9 @@ const WelcomeScreen = ({navigation}) => {
       style={styles.background}
       imageStyle={styles.backgroundImage}>
       <StatusBar hidden={true} />
-      <TouchableOpacity style={[styles.themeToggleButton,{backgroundColor:theme.button}]} onPress={toggleTheme}>
+      <TouchableOpacity
+        style={[styles.themeToggleButton, {backgroundColor: theme.button}]}
+        onPress={toggleTheme}>
         <Icon
           name={isDarkTheme ? 'moon-outline' : 'sunny-outline'} // Change this line
           size={30}
@@ -70,7 +72,7 @@ const WelcomeScreen = ({navigation}) => {
         </View>
         <View style={styles.datawrapper}>
           <TouchableOpacity
-            style={[styles.iconWrapper,{backgroundColor:theme.button}]}
+            style={[styles.iconWrapper, {backgroundColor: theme.button}]}
             onPress={() => navigation.navigate('DbView')}>
             <Icon name="newspaper-outline" size={30} color={theme.icon} />
           </TouchableOpacity>
@@ -86,7 +88,9 @@ const WelcomeScreen = ({navigation}) => {
             <Icon name="person-outline" size={30} color={theme.icon} />
             <Text style={[styles.iconText, {color: theme.text}]}>Visitors</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.iconButton}>
+          <TouchableOpacity
+            style={styles.iconButton}
+            onPress={() => navigation.navigate('PromptPage')}>
             <Icon name="settings-outline" size={30} color={theme.icon} />
             <Text style={[styles.iconText, {color: theme.text}]}>Settings</Text>
           </TouchableOpacity>

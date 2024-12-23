@@ -97,13 +97,16 @@ const EmployeeCheckin = ({navigation, route}) => {
                   styles.button,
                   {backgroundColor: theme.button},
                   {borderColor: theme.border},
-                ]}>
+                ]}
+                onPress={() =>
+                  navigation.navigate('FingerAuth', {isCheckoutMode})
+                }>
                 <Image
-                 source={
-                  isDarkTheme
-                    ? require('../assets/fingerprint.webp')
-                    : require('../assets/fingerprint1.webp')
-                }
+                  source={
+                    isDarkTheme
+                      ? require('../assets/fingerprint.webp')
+                      : require('../assets/fingerprint1.webp')
+                  }
                   style={styles.icon}
                   resizeMode="contain"
                 />
