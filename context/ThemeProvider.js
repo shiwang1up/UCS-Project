@@ -11,6 +11,7 @@ const lightTheme = {
   buttonText: 'black',
   icon: 'black',
   border:'rgba(0, 0, 0, 0.6)',
+  base:'rgba(0,0,0,0.8)',
 };
 
 // Dark theme
@@ -21,6 +22,7 @@ const darkTheme = {
   buttonText: 'white',
   icon: 'white',
   border:'rgba(255, 255, 255, 0.6)',
+  base:'rgba(255,255,255,1)',
 
 };
 

@@ -45,7 +45,7 @@ const PromptPage = ({navigation, route}) => {
           routes: [{name: 'Welcome'}],
         }),
       );
-    }, 5000);
+    }, 100000);
 
     return () => clearTimeout(timer);
   }, [navigation]);
@@ -79,7 +79,7 @@ const PromptPage = ({navigation, route}) => {
         <View
           style={[
             styles.cameraWrapper,
-            {borderColor: isCheckoutMode ? '#dd2d4a' : '#2dc653'},
+            {borderColor: isCheckoutMode ? '#dd2726' : '#17a24a'},
           ]}>
           <FastImage
             source={gifSource} // Use FastImage for the GIF
@@ -92,14 +92,14 @@ const PromptPage = ({navigation, route}) => {
           style={[
             styles.infoWrapper,
             {
-              backgroundColor: isCheckoutMode ? '#dd2d4a' : '#2dc653',
+              backgroundColor: isCheckoutMode ? '#dd2726' : '#17a24a',
             },
           ]}>
           <View
             style={[
               styles.retakeButton,
               {
-                backgroundColor: isCheckoutMode ? '#dd2d4a' : '#2dc653',
+                backgroundColor: isCheckoutMode ? '#dd2726' : '#17a24a',
                 position: 'relative',
               },
             ]}>
@@ -255,11 +255,12 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 20,
     marginBottom: 20,
+    fontWeight:'700',
   },
   buttonLabel: {
-    color: 'black',
+    color: 'white',
     fontSize: 20,
-    fontWeight: '600',
+    fontWeight: '900',
     marginBottom: 20,
   },
   capturedImageContainer: {

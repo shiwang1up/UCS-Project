@@ -6,48 +6,27 @@ import {
   TouchableOpacity,
   SectionList,
 } from 'react-native';
-import {
-  createTable,
-  getUsers,
-  getMasterData,
-  updateUserSyncStatus,
-  fetchAndSaveMasterData,
-} from '../services/dbService';
+import {createTable, getMasterData} from '../services/dbService';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {ActivityIndicator} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import Icon2 from 'react-native-vector-icons/Entypo';
-import Icon3 from 'react-native-vector-icons/AntDesign';
 
-const UserScreen = ({navigation}) => {
-  const [users, setUsers] = useState([]);
+const VisitorList = ({navigation}) => {
   const [masterData, setMasterData] = useState([]);
   const [isSyncingUser, setIsSyncingUser] = useState(false);
-  const [newData, setNewData] = useState([]);
 
   const [isUserTableExpanded, setIsUserTableExpanded] = useState(false);
   const [isMasterTableExpanded, setIsMasterTableExpanded] = useState(false);
   const [isNewDataTableExpanded, setIsNewDataTableExpanded] = useState(false);
 
-  const displayedUsers = isUserTableExpanded ? users : users.slice(0, 10);
   const displayedMasterData = isMasterTableExpanded
     ? masterData
     : masterData.slice(0, 10);
-  const displayedNewData = isNewDataTableExpanded
-    ? newData
-    : newData.slice(0, 10);
 
   useEffect(() => {
     const loadData = async () => {
-      createTable();
-
-      getUsers(fetchedUsers => {
-        const sortedUsers = fetchedUsers.sort((a, b) => {
-          return new Date(b.timing) - new Date(a.timing);
-        });
-        setUsers(sortedUsers);
-      });
+      createTable(); // Keep this if you still need to create the table
 
       try {
         const fetchingMasterData = await getMasterData();
@@ -55,41 +34,14 @@ const UserScreen = ({navigation}) => {
       } catch (error) {
         console.error('Error fetching master data:', error);
       }
-
-      fetchNewData();
     };
 
     loadData();
   }, []);
-  const fetchNewData = () => {
-    fetch('http://156.67.111.32:3020/api/Employee/transactions', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-      })
-      .then(data => {
-        // Sort the data based on lastTransactionDate in descending order
-        const sortedData = data.sort((a, b) => {
-          return new Date(b.opDateTime) - new Date(a.opDateTime);
-        });
-        setNewData(sortedData); // Update the new data state with sorted data
-      })
-      .catch(error => {
-        console.error('Error fetching new data:', error);
-      });
-  };
 
   const formatDate = isoString => {
     const date = new Date(isoString);
 
-    // Get the components of the date
     const options = {
       year: 'numeric',
       month: 'short',
@@ -101,10 +53,8 @@ const UserScreen = ({navigation}) => {
     };
     const formattedDate = date.toLocaleString('en-US', options);
 
-    // Extract the date parts
     const [month, day, year, time] = formattedDate.split(/, | /);
 
-    // Add the suffix for the day
     const suffix =
       day.endsWith('1') && day !== '11'
         ? 'st'
@@ -116,134 +66,13 @@ const UserScreen = ({navigation}) => {
 
     return `${month} ${day}${suffix}, ${year} at ${time}`;
   };
-  const handleSyncUser = () => {
-    handleSyncMaster();
-    setIsSyncingUser(true);
-    getUsers(fetchedUsers => {
-      const payload = fetchedUsers
-        .map(user => {
-          if (!user.isSynced) {
-            return {
-              employeeId: user.userid,
-              op: user.operation,
-              opDateTime: user.timing,
-              fingerPrintData: 'abcd',
-            };
-          }
-          return null;
-        })
-        .filter(Boolean);
-
-      console.log(payload, 'Payload is this for handleSync:User ');
-
-      if (payload.length === 0) {
-        console.log('No users to sync. Request list cannot be empty.');
-        setIsSyncingUser(false);
-        return;
-      }
-
-      fetch('http://156.67.111.32:3020/api/Employee', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      })
-        .then(response => {
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
-          return response.json();
-        })
-        .then(data => {
-          if (Array.isArray(data)) {
-            data.forEach(item => {
-              if (item.status === 'Success') {
-                updateUserSyncStatus(item.employeeId, true, success => {
-                  if (!success) {
-                    // console.log(
-                    //   `Failed to update user ${item.userId} sync status.`,
-                    // );
-                  }
-                });
-              } else if (item.status === 'Error') {
-                // console.log(
-                //   `Error for user ${item.employeeId}: ${item.status}`,
-                // );
-                updateUserSyncStatus(item.employeeId, true, success => {
-                  if (!success) {
-                  }
-                });
-              }
-            });
-          }
-        })
-        .then(() => {
-          getUsers(updatedUsers => {
-            const sortedUpdatedUsers = updatedUsers.sort((a, b) => {
-              return new Date(b.timing) - new Date(a.timing);
-            });
-            setUsers(sortedUpdatedUsers);
-          });
-        })
-        .then(() => {
-          fetchNewData();
-        })
-        .catch(error => {})
-        .finally(() => {
-          setIsSyncingUser(false);
-        });
-    });
-  };
-  const handleSyncMaster = () => {
-    setIsSyncingUser(true);
-
-    fetchAndSaveMasterData()
-      .then(async () => {
-        try {
-          const fetchingMasterData = await getMasterData();
-
-          if (fetchingMasterData && fetchingMasterData.length > 0) {
-            setMasterData(fetchingMasterData);
-          } else {
-          }
-        } catch (error) {
-          console.error('Error fetching master data:', error);
-        }
-      })
-      .catch(error => {
-        console.error('Error during master data sync: ', error);
-      })
-      .finally(() => {
-        setIsSyncingUser(false);
-      });
-  };
 
   const sections = [
     {
-      title: 'Offline Employee Data( Checkin / Checkout )',
-      data: [{isHeader: true}, ...displayedUsers],
-    },
-    {
-      title: 'Master Data List',
+      title: 'Visitor List',
       data: [{isHeader: true}, ...displayedMasterData],
     },
-    {
-      title: 'Synced Server Data List',
-      data: [{isHeader: true}, ...displayedNewData],
-    },
   ];
-
-  const renderNewTableHeader = () => (
-    <View style={[styles.tableHeader, styles.newTableHeader]}>
-      <Text style={styles.tableHeaderCell}>Employee ID</Text>
-      <Text style={styles.tableHeaderCell}>Operation</Text>
-      <Text style={styles.tableHeaderCell}>Operation Time</Text>
-      <Text style={styles.tableHeaderCell}>Employee Name</Text>
-      <Text style={styles.tableHeaderCell}>Last Transaction Date</Text>
-      {/* Add more headers as needed */}
-    </View>
-  );
 
   const renderExpandButton = (isExpanded, setExpanded) => (
     <View style={styles.expandView}>
@@ -259,36 +88,11 @@ const UserScreen = ({navigation}) => {
   );
 
   const renderItem = ({item, section}) => {
-    if (item.isHeader) {
-      return section.title === 'Offline Employee Data( Checkin / Checkout )'
-        ? renderUserTableHeader()
-        : section.title === 'Master Data List'
-        ? renderMasterTableHeader()
-        : renderNewTableHeader(); // Render new table header
-    }
+    if (section.title === 'Visitor List') {
+      if (item.isHeader) {
+        return renderMasterTableHeader();
+      }
 
-    if (section.title === 'Offline Employee Data( Checkin / Checkout )') {
-      return (
-        <View style={styles.tableRow}>
-          <Text style={styles.tableCell}>{item.userid}</Text>
-          <Text style={styles.tableCell}>
-            {item.operation === '1'
-              ? 'Check in'
-              : item.operation === '0'
-              ? 'Check out'
-              : 'Unknown'}
-          </Text>
-          <Text style={styles.tableCell}>{formatDate(item.timing)}</Text>
-          <View style={styles.tableCell}>
-            {item.isSynced ? (
-              <Icon3 name="checksquare" size={22} color="green" />
-            ) : (
-              <Icon2 name="squared-cross" size={24} color="red" />
-            )}
-          </View>
-        </View>
-      );
-    } else if (section.title === 'Master Data List') {
       return (
         <View style={styles.tableRow}>
           <Text style={styles.tableCell}>{item.masterId}</Text>
@@ -300,27 +104,15 @@ const UserScreen = ({navigation}) => {
           </Text>
         </View>
       );
-    } else if (section.title === 'Synced Server Data List') {
-      return (
-        <View style={styles.tableRow}>
-          <Text style={styles.tableCell}>{`100${item.masterId}`}</Text>
-          <Text style={styles.tableCell}>{item.operationType}</Text>
-          <Text style={styles.tableCell}>{formatDate(item.opDateTime)}</Text>
-          <Text style={styles.tableCell}>{item.employeename}</Text>
-          <Text style={styles.tableCell}>
-            {formatDate(item.lastTransactionDate)}
-          </Text>
-        </View>
-      );
     }
+
     return null;
   };
   const renderSectionFooter = ({section}) => {
     if (section.data.length > 1) {
-      // Check if there are items in the section
       if (section.title === 'Offline Employee Data( Checkin / Checkout )') {
         return renderExpandButton(isUserTableExpanded, setIsUserTableExpanded);
-      } else if (section.title === 'Master Data List') {
+      } else if (section.title === 'Visitor List') {
         return renderExpandButton(
           isMasterTableExpanded,
           setIsMasterTableExpanded,
@@ -334,14 +126,6 @@ const UserScreen = ({navigation}) => {
     }
     return null;
   };
-  const renderUserTableHeader = () => (
-    <View style={[styles.tableHeader, styles.userTableHeader]}>
-      <Text style={styles.tableHeaderCell}>Employee ID</Text>
-      <Text style={styles.tableHeaderCell}>Operation</Text>
-      <Text style={styles.tableHeaderCell}>Timing</Text>
-      <Text style={styles.tableHeaderCell}>Is Synced</Text>
-    </View>
-  );
 
   const renderMasterTableHeader = () => (
     <View style={[styles.tableHeader, styles.masterTableHeader]}>
@@ -365,7 +149,7 @@ const UserScreen = ({navigation}) => {
             onPress={() => navigation.goBack()}>
             <Icon name="arrow-back" size={35} color={'#00b4d8'} />
           </TouchableOpacity>
-          <Text style={styles.titleText}>Offline Records</Text>
+          <Text style={styles.titleText}>Visitor List</Text>
           <View>{/* <Text></Text> */}</View>
         </View>
 
@@ -398,23 +182,6 @@ const UserScreen = ({navigation}) => {
               renderItem={renderItem}
               renderSectionHeader={renderSectionHeader}
               renderSectionFooter={renderSectionFooter} // Add this line to render the footer
-              ListHeaderComponent={
-                <View
-                  style={{
-                    padding: 8,
-                    alignSelf: 'flex-end',
-                    alignItems: 'center',
-                  }}>
-                  {/* <Icon name="sync" size={30} />
-                   */}
-                  <TouchableOpacity
-                    style={styles.row}
-                    onPress={() => handleSyncUser()}>
-                    <Text style={[styles.buttonText]}>Sync</Text>
-                    <Icon name="sync" size={22} color="white" />
-                  </TouchableOpacity>
-                </View>
-              }
             />
           </View>
         </SafeAreaView>
@@ -463,7 +230,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#d1e7dd', // Light green for user table header
   },
   masterTableHeader: {
-    backgroundColor: '#cfe2ff', // Light blue for master data table header
+    backgroundColor: '#FFFD82', // Light blue for master data table header
   },
   newTableHeader: {
     backgroundColor: '#ffeeba', // Light yellow for synced server data table header
@@ -581,4 +348,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default UserScreen;
+export default VisitorList;

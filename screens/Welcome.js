@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -9,9 +9,13 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Icon3 from 'react-native-vector-icons/MaterialCommunityIcons';
+import Icon4 from 'react-native-vector-icons/Feather';
 import Icon2 from 'react-native-vector-icons/SimpleLineIcons';
 import {useTheme} from '../context/ThemeProvider';
+import {SettingsContext} from '../context/SettingsProvider'; // Import your context
+
 const WelcomeScreen = ({navigation}) => {
+  const {isInternetConnected} = useContext(SettingsContext); // Access the internet connection state
   const {theme, toggleTheme} = useTheme();
   const images = [
     'https://wallpaperaccess.com/full/189167.jpg',
@@ -34,15 +38,29 @@ const WelcomeScreen = ({navigation}) => {
       style={styles.background}
       imageStyle={styles.backgroundImage}>
       <StatusBar hidden={true} />
-      <TouchableOpacity
-        style={[styles.themeToggleButton, {backgroundColor: theme.button}]}
-        onPress={toggleTheme}>
-        <Icon
-          name={isDarkTheme ? 'moon-outline' : 'sunny-outline'} // Change this line
-          size={30}
-          color={theme.icon}
-        />
-      </TouchableOpacity>
+      {/* <View style={styles.header}> */}
+        <View style={[styles.networkDisplay, {backgroundColor: theme.button}]}>
+          <Icon4
+            name={isInternetConnected ? 'wifi' : 'wifi-off'} // Change this line
+            size={30}
+            color={theme.icon}
+          />
+        </View>
+        <TouchableOpacity
+          style={[styles.themeToggleButton, {backgroundColor: theme.button}]}
+          onPress={toggleTheme}>
+          <Icon
+            name={isDarkTheme ? 'moon-outline' : 'sunny-outline'} // Change this line
+            size={30}
+            color={theme.icon}
+          />
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.logButton, {backgroundColor: theme.button}]}
+          onPress={() => navigation.navigate('LogsPage')}>
+          <Icon3 name="code-json" size={30} color={theme.icon} />
+        </TouchableOpacity>
+      {/* </View> */}
       <View style={styles.wrapper}>
         <View style={[styles.greetingCon]}>
           <Text style={[styles.title, {color: theme.text}]}>Welcome</Text>
@@ -78,18 +96,25 @@ const WelcomeScreen = ({navigation}) => {
             <Icon name="newspaper-outline" size={30} color={theme.icon} />
           </TouchableOpacity>
         </View>
+
         <View style={[styles.iconContainer, {backgroundColor: theme.button}]}>
-          <TouchableOpacity style={styles.iconButton}>
+          <TouchableOpacity
+            style={styles.iconButton}
+            onPress={() => navigation.navigate('EmployeesList')}>
             <Icon name="person-outline" size={30} color={theme.icon} />
             <Text style={[styles.iconText, {color: theme.text}]}>
               Employees
             </Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.iconButton}>
+          <TouchableOpacity
+            style={styles.iconButton}
+            onPress={() => navigation.navigate('VisitorList')}>
             <Icon name="person-outline" size={30} color={theme.icon} />
             <Text style={[styles.iconText, {color: theme.text}]}>Visitors</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.iconButton}>
+          <TouchableOpacity
+            style={styles.iconButton}
+            onPress={() => navigation.navigate('AdminPage')}>
             <Icon3
               name="shield-account-variant-outline"
               size={30}
@@ -114,9 +139,10 @@ const styles = StyleSheet.create({
     padding: 10,
     justifyContent: 'flex-end',
     alignItems: 'flex-end',
-    marginTop: -80,
+    marginTop: -70,
     marginRight: 10,
   },
+
   background: {
     flex: 1,
     justifyContent: 'center',
@@ -192,10 +218,33 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     marginBottom: 30,
   },
+  header: {
+    width: '100%',
+  },
   themeToggleButton: {
     position: 'absolute',
     top: 20,
     right: 20,
+    zIndex: 100,
+    backgroundColor: '#00b4d8',
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    borderRadius: 100,
+  },
+  logButton: {
+    position: 'absolute',
+    bottom: 200,
+    right: 20,
+    zIndex: 100,
+    backgroundColor: '#00b4d8',
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    borderRadius: 100,
+  },
+  networkDisplay: {
+    position: 'absolute',
+    top: 20,
+    left: 20,
     zIndex: 100,
     backgroundColor: '#00b4d8',
     paddingVertical: 16,

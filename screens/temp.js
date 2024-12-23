@@ -219,3 +219,119 @@ const styles = StyleSheet.create({
 });
 
 export default Settings;
+{
+  /**
+  
+  
+  const handleSubmit = () => {
+    if (!id) {
+      Alert.alert('Error', 'Please enter UserID');
+      return;
+    }
+
+    const operation = isCheckoutMode ? 0 : 1;
+    const timing = new Date().toISOString();
+
+    // console.log(timing,"tm")
+    if (!isCheckoutMode) {
+      // Check the latest operation before allowing check-in
+      getLatestOperation(id, latestOperation => {
+        if (latestOperation === '1') {
+          Alert.alert(
+            'Error',
+            'You are already checked in. Please check out first.',
+          );
+          return; // Prevent further execution
+        }
+
+        // Proceed with check-in
+        saveUser(
+          id,
+          operation,
+          timing,
+          () => {
+            const successMessage = `Check in successful !!\nOn ${timing}!`;
+            // Alert.alert('Success', successMessage);
+            setIsCheckedIn(true);
+            // Navigate to PromptPage with additional data
+            navigation.navigate('PromptPage', {
+              isCheckoutMode: false,
+              timing: timing,
+              id: id,
+              alertMessage: successMessage,
+            });
+          },
+          errorMessage => {
+            Alert.alert('Error', errorMessage);
+          },
+        );
+      });
+    } else {
+      // Checkout logic
+      getLatestOperation(id, latestOperation => {
+        if (latestOperation !== '1') {
+          Alert.alert('Error', 'You must be checked in to check out.');
+          return; // Prevent further execution
+        }
+
+        // Proceed with checkout
+        getUserById(id, user => {
+          if (user) {
+            if (user.userid === id) {
+              const checkinTime = new Date(user.checkin);
+              const currentTime = new Date();
+              const timeDifference = (currentTime - checkinTime) / 1000 / 60;
+
+              // Uncomment the following block if you want to enforce the 10-minute rule
+              // if (timeDifference < 10) {
+              //   const remainingTime = 10 - timeDifference;
+              //   Alert.alert(
+              //     'Error',
+              //     `You can only check out after 10 minutes of Check in. Please wait ${remainingTime.toFixed(0)} more minutes.`,
+              //   );
+              //   return;
+              // }
+
+              saveUser(
+                id,
+                operation,
+                timing,
+                () => {
+                  const successMessage = `Checkout time updated successfully !!\nOn ${timing}!`;
+                  // Alert.alert('Success', successMessage);
+                  setIsCheckedIn(true);
+                  // Navigate to PromptPage with additional data
+                  navigation.navigate('PromptPage', {
+                    isCheckoutMode: true,
+                    timing: timing,
+                    id: id,
+                    alertMessage: successMessage,
+                  });
+                },
+                errorMessage => {
+                  Alert.alert(
+                    'Error',
+                    'Failed to update checkout time. Please try again.',
+                  );
+                },
+              );
+            } else {
+              Alert.alert(
+                'Error',
+                'Employee ID does not match. Please check your credentials.',
+              );
+            }
+          } else {
+            Alert.alert(
+              'Error',
+              'Employee not found. Please check your Employee ID.',
+            );
+          }
+        });
+      });
+    }
+  };
+  
+  
+  */
+}

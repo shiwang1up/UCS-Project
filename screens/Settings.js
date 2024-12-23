@@ -7,12 +7,14 @@ import {
   ImageBackground,
   TextInput,
   Switch,
+  ScrollView,
 } from 'react-native';
 import Slider from '@react-native-community/slider';
 import {useTheme} from '../context/ThemeProvider';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Icon2 from 'react-native-vector-icons/MaterialCommunityIcons';
 import {Picker} from '@react-native-picker/picker';
+import AsyncStorage from '@react-native-async-storage/async-storage'; // Import AsyncStorage
 const Settings = ({navigation, route}) => {
   const {theme, toggleTheme} = useTheme();
   const [language, setLanguage] = useState('English');
@@ -21,79 +23,94 @@ const Settings = ({navigation, route}) => {
   const [mediaQuality, setMediaQuality] = useState(50);
   const [deviceIdentifier, setDeviceIdentifier] = useState('');
   const [logSaveLocation, setLogSaveLocation] = useState('');
+  const [isInternetConnected, setIsInternetConnected] = useState(false);
+  const [isGPSConnected, setIsGPSConnected] = useState(false);
 
   const isDarkTheme = theme.buttonText === 'black';
-  const images = [
-    'https://wallpaperaccess.com/full/189167.jpg',
-    'https://www.pixelstalk.net/wp-content/uploads/images1/City-Merlion-Park-Singapore-Wallpaper-1920x1080.jpg',
-    'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&w=1000&q=80',
-  ];
+  // const images = [
+  //   'https://wallpaperaccess.com/full/189167.jpg',
+  //   'https://www.pixelstalk.net/wp-content/uploads/images1/City-Merlion-Park-Singapore-Wallpaper-1920x1080.jpg',
+  //   'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&w=1000&q=80',
+  // ];
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentImageIndex(prevIndex => (prevIndex + 1) % images.length);
-    }, 3000);
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     setCurrentImageIndex(prevIndex => (prevIndex + 1) % images.length);
+  //   }, 3000);
 
-    return () => clearInterval(interval);
-  }, [images.length]);
+  //   return () => clearInterval(interval);
+  // }, [images.length]);
+
+  const saveSettings = async () => {
+    try {
+      const settings = {
+        language,
+        isInternetConnected,
+        isGPSConnected,
+        mediaQuality,
+        logSaveLocation,
+        deviceIdentifier,
+      };
+      await AsyncStorage.setItem('settings', JSON.stringify(settings));
+      console.log('Settings saved:', settings);
+      alert('Settings saved successfully!');
+    } catch (error) {
+      console.error('Error saving settings:', error);
+    }
+  };
 
   return (
-    <ImageBackground
-      source={{uri: images[currentImageIndex]}}
-      style={styles.background}>
-      <View style={styles.container}>
-        <View style={styles.overlay}>
+    // <ImageBackground
+    //   source={{uri: images[currentImageIndex]}}
+    //   style={styles.background}>
+    <View style={[styles.container]}>
+      <View style={styles.overlay}>
+        <View style={[styles.topButtonsContainer, {backgroundColor: 'white'}]}>
+          <TouchableOpacity
+            style={styles.topButtonBack}
+            onPress={() => navigation.goBack()}>
+            <Icon name="arrow-back" size={35} color={'#00b4d8'} />
+          </TouchableOpacity>
           <View
-            style={[
-              styles.topButtonsContainer,
-              {backgroundColor: theme.background},
-            ]}>
-            <TouchableOpacity
-              style={styles.topButtonBack}
-              onPress={() => navigation.goBack()}>
-              <Icon name="arrow-back" size={35} color={'#00b4d8'} />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.topButtonForward}
-              onPress={toggleTheme}>
-              <Icon
-                name={isDarkTheme ? 'moon-outline' : 'sunny-outline'}
-                size={35}
-                color={theme.icon}
-              />
-            </TouchableOpacity>
-          </View>
-          <View style={styles.header}>
-            <Text style={[styles.brandText, {color: theme.text}]}>
-              Settings
-            </Text>
-          </View>
+          // style={styles.topButtonForward}
+          // onPress={toggleTheme}>
+          // <Icon
+          //   name={isDarkTheme ? 'moon-outline' : 'sunny-outline'}
+          //   size={35}
+          //   color={theme.icon}
+          ></View>
+        </View>
+        <View style={styles.header}>
+          <Text style={[styles.brandText, {color: '#00b4d8'}]}>Settings</Text>
+        </View>
 
-          {/* Main Content */}
-          <View style={styles.mainContainer}>
-            <View style={styles.content}>
-              <View
-                style={[
-                  styles.settingsWrapper,
-                  {backgroundColor: theme.button, borderColor: theme.border},
-                ]}>
-                <View style={styles.settingsOptions}>
-                  <Text style={[styles.buttonText, {color: theme.buttonText}]}>
-                    Language
-                  </Text>
-                  <Picker
-                    selectedValue={language}
-                    style={styles.picker}
-                    onValueChange={itemValue => setLanguage(itemValue)}>
-                    <Picker.Item label="English" value="English" />
-                    <Picker.Item label="Spanish" value="Spanish" />
-                    <Picker.Item label="French" value="French" />
-                    {/* Add more languages as needed */}
-                  </Picker>
-                </View>
+        {/* Main Content */}
+        <ScrollView
+          contentContainerStyle={styles.mainContainer} // Use contentContainerStyle for layout properties
+          style={{flexGrow: 1}}>
+          <View style={styles.content}>
+            <View
+              style={[
+                styles.settingsWrapper,
+                {backgroundColor: 'white', borderColor: theme.border},
+              ]}>
+              <View style={styles.settingsOptions}>
+                <Text style={[styles.buttonText, {color: theme.buttonText}]}>
+                  Language
+                </Text>
+                <Picker
+                  selectedValue={language}
+                  style={styles.picker}
+                  onValueChange={itemValue => setLanguage(itemValue)}>
+                  <Picker.Item label="English" value="English" />
+                  <Picker.Item label="Spanish" value="Spanish" />
+                  <Picker.Item label="French" value="French" />
+                  {/* Add more languages as needed */}
+                </Picker>
+              </View>
 
-                <View style={styles.settingsOptions}>
+              {/* <View style={styles.settingsOptions}>
                   <Text style={[styles.buttonText, {color: theme.buttonText}]}>
                     Orientation
                   </Text>
@@ -104,157 +121,181 @@ const Settings = ({navigation, route}) => {
                     </Text>
                     <Switch value={isPortrait} onValueChange={setIsPortrait} />
                   </View>
-                </View>
+                </View> */}
 
+              <View style={styles.settingsOptions}>
+                <View style={styles.switchContainer}>
+                  <Text style={[styles.buttonText, {color: theme.buttonText}]}>
+                    Internet Connectivity
+                  </Text>
+                  <Switch
+                    value={isInternetConnected}
+                    onValueChange={setIsInternetConnected}
+                  />
+                </View>
+              </View>
+
+              <View style={styles.settingsOptions}>
+                <View style={styles.switchContainer}>
+                  <Text style={[styles.buttonText, {color: theme.buttonText}]}>
+                    GPS Connectivity
+                  </Text>
+                  <Switch
+                    value={isGPSConnected}
+                    onValueChange={setIsGPSConnected}
+                  />
+                </View>
+              </View>
+              {/* 
                 <View style={styles.settingsOptions}>
                   <Text style={[styles.buttonText, {color: theme.buttonText}]}>
                     Brightness
                   </Text>
                   <Slider
                     style={styles.slider}
-                    minimumValue={10} // Set minimum value to 1
-                    maximumValue={100} // Set maximum value to 100
-                    step={10} // Step value to allow increments of 10
+                    minimumValue={10}
+                    maximumValue={100}
+                    step={10}
                     value={brightness}
-                    onValueChange={value => setBrightness(Math.round(value))} // Update state on change
+                    onValueChange={value => setBrightness(Math.round(value))}
                     onSlidingComplete={value =>
                       setBrightness(Math.round(value))
-                    } // Final value on slide complete
+                    }
                   />
                   <Text style={[styles.buttonText, {color: theme.buttonText}]}>
                     Value: {brightness}
                   </Text>
-                </View>
-                <View style={styles.settingsOptions}>
-                  <Text style={[styles.buttonText, {color: theme.buttonText}]}>
-                    Media Quality
-                  </Text>
-                  <Slider
-                    style={styles.slider}
-                    minimumValue={10} // Set minimum value to 10
-                    maximumValue={100} // Set maximum value to 100
-                    step={10} // Step value to allow increments of 10
-                    value={mediaQuality} // Current media quality value
-                    onValueChange={value => setMediaQuality(value)} // Update state on change
-                  />
-                  <Text style={[styles.buttonText, {color: theme.buttonText}]}>
-                    Value: {mediaQuality}
-                  </Text>
-                </View>
-                <View style={styles.settingsOptions}>
-                  <Text style={[styles.buttonText, {color: theme.buttonText}]}>
-                    Log Save Location
-                  </Text>
-                  <TextInput
-                    style={[styles.input, {backgroundColor: 'white'}]}
-                    value={logSaveLocation}
-                    onChangeText={setLogSaveLocation} // Update state on text change
-                    placeholder="Enter Log Save Location"
-                  />
+                </View> */}
+              <View style={styles.settingsOptions}>
+                <Text style={[styles.buttonText, {color: theme.buttonText}]}>
+                  Media Quality
+                </Text>
+                <Slider
+                  style={styles.slider}
+                  minimumValue={10} // Set minimum value to 10
+                  maximumValue={100} // Set maximum value to 100
+                  step={10} // Step value to allow increments of 10
+                  value={mediaQuality} // Current media quality value
+                  onValueChange={value => setMediaQuality(value)} // Update state on change
+                />
+                <Text style={[styles.buttonText, {color: theme.buttonText}]}>
+                  Value: {mediaQuality}
+                </Text>
+              </View>
+              <View style={styles.settingsOptions}>
+                <Text style={[styles.buttonText, {color: theme.buttonText}]}>
+                  Log Save Location
+                </Text>
+                <TextInput
+                  style={[styles.input, {backgroundColor: 'white'}]}
+                  value={logSaveLocation}
+                  onChangeText={setLogSaveLocation} // Update state on text change
+                  placeholder="Enter Log Save Location"
+                />
+                <View
+                  style={{
+                    justifyContent: 'space-around',
+                    alignItems: 'flex-end',
+                    flexDirection: 'row',
+                  }}>
                   <View
-                    style={{
-                      justifyContent: 'space-around',
-                      alignItems: 'flex-end',
-                      flexDirection: 'row',
-                    }}>
-                    <View
-                      style={[
-                        styles.syncButton,
-                        {
-                          backgroundColor: 'transparent',
-                        },
-                      ]}></View>
-                    <TouchableOpacity
-                      style={[
-                        styles.syncButton,
-                        {
-                          backgroundColor: theme.button,
-                          borderWidth: 1,
-                          borderColor: theme.border,
-                        },
-                        {
-                          flexDirection: 'row',
-                          justifyContent: 'space-evenly',
-                          alignItems: 'center',
-                        },
-                      ]}
-                      onPress={() => console.log('Syncing...')}>
-                      <Text style={[styles.buttonText, {color: theme.text}]}>
-                        Generate Logs
-                      </Text>
-                      <Icon2 name="code-json" size={22} style={{color: theme.text}} />
-                    </TouchableOpacity>
-                  </View>
+                    style={[
+                      styles.syncButton,
+                      {
+                        backgroundColor: 'transparent',
+                      },
+                    ]}></View>
+                  <TouchableOpacity
+                    style={[
+                      styles.syncButton,
+                      {
+                        backgroundColor: theme.button,
+                        borderWidth: 1,
+                        borderColor: theme.border,
+                      },
+                      {
+                        flexDirection: 'row',
+                        justifyContent: 'space-evenly',
+                        alignItems: 'center',
+                      },
+                    ]}
+                    onPress={() => console.log('Syncing...')}>
+                    <Text style={[styles.buttonText, {color: theme.text}]}>
+                      Save Logs
+                    </Text>
+                    <Icon2
+                      name="code-json"
+                      size={22}
+                      style={{color: theme.text}}
+                    />
+                  </TouchableOpacity>
                 </View>
+              </View>
 
-                <View style={styles.settingsOptions}>
-                  <Text style={[styles.buttonText, {color: theme.buttonText}]}>
-                    Device Identifier
-                  </Text>
-                  <TextInput
-                    style={[styles.input, {backgroundColor: 'white'}]}
-                    value={deviceIdentifier}
-                    on
-                    ChangeText={setDeviceIdentifier}
-                    placeholder="Enter Device Identifier"
-                    keyboardType="numeric"
-                  />
-                  <View
-                    style={{
-                      justifyContent: 'space-around',
-                      alignItems: 'flex-end',
-                      flexDirection: 'row',
-                      marginTop: 10,
-                    }}>
-                    <TouchableOpacity
-                      style={[
-                        styles.syncButton,
-                        {
-                          backgroundColor: theme.button,
-                          borderWidth: 1,
-                          borderColor: theme.border,
-                        },
-                        {
-                          flexDirection: 'row',
-                          justifyContent: 'space-evenly',
-                          alignItems: 'center',
-                        },
-                      ]}
-                      onPress={() => console.log('Syncing...')}>
-                      <Text style={[styles.buttonText, {color: theme.text}]}>
-                        Sync Now
-                      </Text>
-                      <Icon name="sync" size={22} style={{color: theme.text}} />
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={[
-                        styles.syncButton,
-                        {
-                          flexDirection: 'row',
-                          justifyContent: 'space-evenly',
-                          alignItems: 'center',
-                          borderWidth: 1,
-                          borderColor: theme.border,
-                        },
-                      ]}
-                      onPress={() => console.log('Syncing...')}>
-                      <Text style={[styles.buttonText, {color: 'white'}]}>
-                        Save
-                      </Text>
-                      <Icon
-                        name="checkmark"
-                        size={22}
-                        style={{color: 'white'}}
-                      />
-                    </TouchableOpacity>
-                  </View>
+              <View style={styles.settingsOptions}>
+                <Text style={[styles.buttonText, {color: theme.buttonText}]}>
+                  Device Identifier
+                </Text>
+                <TextInput
+                  style={[styles.input, {backgroundColor: 'white'}]}
+                  value={deviceIdentifier}
+                  on
+                  ChangeText={setDeviceIdentifier}
+                  placeholder="Enter Device Identifier"
+                  keyboardType="numeric"
+                />
+                <View
+                  style={{
+                    justifyContent: 'space-around',
+                    alignItems: 'flex-end',
+                    flexDirection: 'row',
+                    marginTop: 10,
+                  }}>
+                  <TouchableOpacity
+                    style={[
+                      styles.syncButton,
+                      {
+                        backgroundColor: theme.button,
+                        borderWidth: 1,
+                        borderColor: theme.border,
+                      },
+                      {
+                        flexDirection: 'row',
+                        justifyContent: 'space-evenly',
+                        alignItems: 'center',
+                      },
+                    ]}
+                    onPress={() => console.log('Syncing...')}>
+                    <Text style={[styles.buttonText, {color: theme.text}]}>
+                      Sync Now
+                    </Text>
+                    <Icon name="sync" size={22} style={{color: theme.text}} />
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[
+                      styles.syncButton,
+                      {
+                        flexDirection: 'row',
+                        justifyContent: 'space-evenly',
+                        alignItems: 'center',
+                        borderWidth: 1,
+                        borderColor: theme.border,
+                      },
+                    ]}
+                    onPress={() => saveSettings}>
+                    <Text style={[styles.buttonText, {color: 'white'}]}>
+                      Save
+                    </Text>
+                    <Icon name="checkmark" size={22} style={{color: 'white'}} />
+                  </TouchableOpacity>
                 </View>
               </View>
             </View>
           </View>
-        </View>
+        </ScrollView>
       </View>
-    </ImageBackground>
+    </View>
+    // </ImageBackground>
   );
 };
 
@@ -282,16 +323,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     width: '100%',
     // padding:20,
-    backgroundColor: 'rgba(255, 255, 255, 0.4)', // Semi-transparent overlay
+    backgroundColor: 'rgba(0,0,0,0.04)',
   },
   content: {
     justifyContent: 'space-around',
     width: '100%',
     alignItems: 'center',
+    // borderWidth: 1,
   },
   brandText: {
     fontSize: 56,
-    fontWeight: 'bold',
+    fontWeight: '500',
   },
   header: {
     alignItems: 'flex-start',
@@ -300,9 +342,8 @@ const styles = StyleSheet.create({
   },
   mainContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
     width: '100%',
+    height: 'auto',
   },
 
   container: {
@@ -311,7 +352,6 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  // Define your styles here
   topButtonForward: {
     backgroundColor: '#00b4d8',
     paddingVertical: 16,
@@ -331,6 +371,7 @@ const styles = StyleSheet.create({
   settingsWrapper: {
     width: '60%',
     // height: '97%',
+    paddingTop:10,
     margin: 10,
     marginTop: 20,
     borderRadius: 10,
@@ -351,6 +392,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    // width:'100%',
+    borderWidth: 1,
+    borderColor: 'transparent',
   },
   slider: {
     width: '100%',

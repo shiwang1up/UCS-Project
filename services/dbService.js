@@ -1,4 +1,3 @@
-import MaskedView from '@react-native-community/masked-view';
 import SQLite from 'react-native-sqlite-storage';
 
 const db = SQLite.openDatabase(
@@ -44,6 +43,56 @@ const createTable = () => {
       [],
       () => {},
       error => {},
+    );
+  });
+};
+
+const createLogsTable = () => {
+  db.transaction(tx => {
+    tx.executeSql(
+      'CREATE TABLE IF NOT EXISTS logs (id INTEGER PRIMARY KEY AUTOINCREMENT, employeeid TEXT, operation TEXT, response TEXT, message TEXT, timing TEXT)',
+      [],
+      () => {
+        console.log('Logs table created successfully.');
+      },
+      error => {
+        console.error('Error creating logs table: ', error);
+      },
+    );
+  });
+};
+
+const getLogs = callback => {
+  db.transaction(tx => {
+    tx.executeSql(
+      'SELECT * FROM logs ORDER BY timing DESC', // Fetch logs ordered by timing
+      [],
+      (tx, results) => {
+        const logs = [];
+        for (let i = 0; i < results.rows.length; i++) {
+          logs.push(results.rows.item(i));
+        }
+        callback(logs); // Return the logs to the callback
+      },
+      error => {
+        console.error('Error fetching logs: ', error);
+        callback([]); // Return an empty array on error
+      },
+    );
+  });
+};
+
+const logOperation = (employeeId, operation, response, message, timing) => {
+  db.transaction(tx => {
+    tx.executeSql(
+      'INSERT INTO logs (employeeid, operation, response, message, timing) VALUES (?, ?, ?, ?, ?)',
+      [employeeId, operation, response, message, timing],
+      () => {
+        console.log('Log saved successfully.');
+      },
+      error => {
+        console.error('Error saving log: ', error);
+      },
     );
   });
 };
@@ -124,12 +173,20 @@ const getLatestOperation = (userId, callback) => {
       },
       error => {
         console.error('Error fetching latest operation:', error);
+        // Log the error in the logs table
+        const timing = new Date().toISOString();
+        logOperation(
+          userId,
+          'fetch_latest_operation',
+          'not success',
+          error.message,
+          timing,
+        );
         callback(null); // Handle error case
       },
     );
   });
 };
-
 const updateUserSyncStatus = (userId, newStatus, callback) => {
   db.transaction(tx => {
     tx.executeSql(
@@ -245,4 +302,7 @@ export {
   updateUserSyncStatus,
   fetchAndSaveMasterData,
   getLatestOperation,
+  createLogsTable,
+  getLogs,
+  logOperation,
 };
