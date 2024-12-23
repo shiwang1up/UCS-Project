@@ -25,7 +25,6 @@ import Icon3 from 'react-native-vector-icons/AntDesign';
 const UserScreen = ({navigation}) => {
   const [users, setUsers] = useState([]);
   const [masterData, setMasterData] = useState([]);
-  const [isSyncingMaster, setIsSyncingMaster] = useState(false);
   const [isSyncingUser, setIsSyncingUser] = useState(false);
   const [newData, setNewData] = useState([]);
 
@@ -358,6 +357,7 @@ const UserScreen = ({navigation}) => {
   const renderSectionHeader = ({section: {title}}) => (
     <Text style={styles.header}>{title}</Text>
   );
+
   return (
     <GestureHandlerRootView style={{flex: 1}}>
       <View style={styles.container}>
@@ -453,7 +453,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 10,
     right: 10,
-    borderRadius:6,
+    borderRadius: 6,
   },
   buttonText: {
     fontSize: 16,

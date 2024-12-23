@@ -11,7 +11,7 @@ import IdPass from './screens/IdPass';
 import Immersive from 'react-native-immersive'; // Import the immersive package
 import FingerAuth from './screens/FingerAuth';
 import PromptPage from './screens/PromptPage';
-import EmployeeHistory from './screens/test';
+import Settings from './screens/Settings';
 
 const Stack = createNativeStackNavigator();
 
@@ -42,6 +42,7 @@ const App = () => {
           <Stack.Screen name="CheckIn" component={EmployeeCheckin} />
           <Stack.Screen name="DbView" component={UserScreen} />
           <Stack.Screen name="PromptPage" component={PromptPage} />
+          <Stack.Screen name="Settings" component={Settings} />
         </Stack.Navigator>
       </NavigationContainer>
     </ThemeProvider>

@@ -8,6 +8,7 @@ import {
   StatusBar,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import Icon3 from 'react-native-vector-icons/MaterialCommunityIcons';
 import Icon2 from 'react-native-vector-icons/SimpleLineIcons';
 import {useTheme} from '../context/ThemeProvider';
 const WelcomeScreen = ({navigation}) => {
@@ -88,9 +89,17 @@ const WelcomeScreen = ({navigation}) => {
             <Icon name="person-outline" size={30} color={theme.icon} />
             <Text style={[styles.iconText, {color: theme.text}]}>Visitors</Text>
           </TouchableOpacity>
+          <TouchableOpacity style={styles.iconButton}>
+            <Icon3
+              name="shield-account-variant-outline"
+              size={30}
+              color={theme.icon}
+            />
+            <Text style={[styles.iconText, {color: theme.text}]}>Admin</Text>
+          </TouchableOpacity>
           <TouchableOpacity
             style={styles.iconButton}
-            onPress={() => navigation.navigate('PromptPage')}>
+            onPress={() => navigation.navigate('Settings')}>
             <Icon name="settings-outline" size={30} color={theme.icon} />
             <Text style={[styles.iconText, {color: theme.text}]}>Settings</Text>
           </TouchableOpacity>

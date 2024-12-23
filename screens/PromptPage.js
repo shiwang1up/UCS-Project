@@ -8,6 +8,8 @@ import {CommonActions} from '@react-navigation/native';
 
 const PromptPage = ({navigation, route}) => {
   const {isCheckoutMode, timing, id} = route.params || {};
+  // const {timing, id} = route.params || {};
+  // const isCheckoutMode = false;
 
   const {theme} = useTheme();
 
@@ -56,7 +58,6 @@ const PromptPage = ({navigation, route}) => {
         </View>
 
         <Text style={styles.titleText}>
-          {' '}
           {isCheckoutMode ? 'Checkout Successful' : 'Checkin Successful'}
         </Text>
 
@@ -75,7 +76,11 @@ const PromptPage = ({navigation, route}) => {
       </View>
       {/* Top Buttons */}
       <View style={styles.content}>
-        <View style={styles.cameraWrapper}>
+        <View
+          style={[
+            styles.cameraWrapper,
+            {borderColor: isCheckoutMode ? '#dd2d4a' : '#2dc653'},
+          ]}>
           <FastImage
             source={gifSource} // Use FastImage for the GIF
             style={styles.gif}
@@ -83,8 +88,21 @@ const PromptPage = ({navigation, route}) => {
           />
         </View>
 
-        <View style={[styles.infoWrapper, {backgroundColor: '#00b4d8'}]}>
-          <View style={[styles.retakeButton, {backgroundColor: '#00b4d8'}]}>
+        <View
+          style={[
+            styles.infoWrapper,
+            {
+              backgroundColor: isCheckoutMode ? '#dd2d4a' : '#2dc653',
+            },
+          ]}>
+          <View
+            style={[
+              styles.retakeButton,
+              {
+                backgroundColor: isCheckoutMode ? '#dd2d4a' : '#2dc653',
+                position: 'relative',
+              },
+            ]}>
             <Text
               style={{
                 textAlign: 'center',
@@ -92,7 +110,7 @@ const PromptPage = ({navigation, route}) => {
                 color: 'white',
                 marginBottom: 10,
               }}>
-              {isCheckoutMode ? 'Bye' : 'Welcome'}
+              {isCheckoutMode ? 'Thankyou' : 'Welcome'}
             </Text>
             <View
               style={{
@@ -111,6 +129,18 @@ const PromptPage = ({navigation, route}) => {
                 <Text style={styles.buttonText}>{formattedDate}</Text>
                 <Text style={styles.buttonText}>{formattedTime}</Text>
               </View>
+            </View>
+            <View
+              style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+              <Text
+                style={{
+                  textAlign: 'center',
+                  fontSize: 26,
+                  color: 'white',
+                  marginTop: 20,
+                }}>
+                Have a nice day!!!
+              </Text>
             </View>
           </View>
         </View>
@@ -173,8 +203,7 @@ const styles = StyleSheet.create({
     borderRadius: 400,
     overflow: 'hidden',
     backgroundColor: 'white',
-    borderWidth: 2,
-    borderColor: '#00b4d8',
+    borderWidth: 3,
   },
   welcomeText: {
     fontSize: 22,
@@ -211,7 +240,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   retakeButton: {
-    borderWidth: 2,
+    borderWidth: 3,
     borderColor: 'white',
     borderRadius: 25,
     height: '95%',
