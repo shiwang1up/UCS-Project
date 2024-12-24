@@ -277,7 +277,7 @@ const UserScreen = ({navigation}) => {
   ];
 
   const renderNewTableHeader = () => (
-    <View style={[styles.tableHeader, styles.newTableHeader]}>
+    <View style={[styles.tableHeader, styles.newTableHeader,{marginBottom:60,}]}>
       <Text style={styles.tableHeaderCell}>Employee ID</Text>
       <Text style={styles.tableHeaderCell}>Operation</Text>
       <Text style={styles.tableHeaderCell}>Operation Time</Text>
@@ -422,11 +422,12 @@ const UserScreen = ({navigation}) => {
             <SectionList
               style={{
                 borderRadius: 10,
-                marginTop: 10,
+                marginTop: 15,
                 marginHorizontal: 5,
                 paddingHorizontal: 20,
+                paddingTop: 20,
+                marginBottom:20,
                 backgroundColor: 'white',
-                position: 'relative',
               }}
               sections={sections}
               keyExtractor={(item, index) => {
@@ -443,12 +444,11 @@ const UserScreen = ({navigation}) => {
               ListHeaderComponent={
                 <View
                   style={{
-                    padding: 8,
+                    // padding: 8,
                     alignSelf: 'flex-end',
                     alignItems: 'center',
+                    zIndex: 2,
                   }}>
-                  {/* <Icon name="sync" size={30} />
-                   */}
                   <TouchableOpacity
                     style={[styles.row]}
                     onPress={() => handleSyncUser()}>
@@ -490,9 +490,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#00b4d8',
     paddingHorizontal: 15,
     paddingVertical: 7,
-    position: 'absolute',
-    top: 10,
-    right: 10,
+    // position: 'absolute',
+    // top: 10,
+    right: 20,
     borderRadius: 6,
   },
   buttonText: {
@@ -552,7 +552,8 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.04)',
+    backgroundColor: '#f0f4f7',
+
   },
   mainContent: {
     marginTop: 110,
@@ -567,6 +568,7 @@ const styles = StyleSheet.create({
     // borderWidth: 2,
     // borderColor: 'red',
     padding: 20,
+    alignItems: 'center',
     backgroundColor: 'white',
   },
   titleText: {

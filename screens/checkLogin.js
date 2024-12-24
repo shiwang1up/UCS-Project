@@ -16,7 +16,8 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import {useNavigation} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const image = require('../assets/background.png');
+const backgroundImg = require('../assets/background.png');
+const logoImg = require('../assets/logo.png');
 
 const LoginPage = ({navigation}) => {
   const [username, setUsername] = useState('');
@@ -32,26 +33,26 @@ const LoginPage = ({navigation}) => {
       return;
     }
     await AsyncStorage.setItem('isLoggedIn', 'true');
-    navigation.navigate('Welcome');
+    navigation.navigate('Welcome'); // Navigate to Dashboard on successful login
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#1B1824" />
-      <ImageBackground source={image} resizeMode="stretch" style={styles.image}>
+      <ImageBackground source={backgroundImg} style={styles.image}>
         <View style={styles.overlay}>
           <Text style={styles.title}>
-            Hello, <Text style={{color: '#F2D56A', }}>Good Morning</Text>
+            Hello, <Text style={styles.highlight}>Good Morning</Text>
           </Text>
           <Text style={styles.title}>
-            Welcome Back<Text style={{color: '#F2D56A', }}>!</Text>
+            Welcome Back<Text style={styles.highlight}>!</Text>
           </Text>
         </View>
       </ImageBackground>
-      <Image source={require('../assets/logo.png')} style={styles.logo} />
-      <View style={styles.inputWrapper}>
-        <Text style={{paddingHorizontal: 10}}>
-          User Name<Text style={{color: 'red'}}>*</Text>
+      <Image source={logoImg} style={styles.logo} />
+      <View style={styles.inputContainer}>
+        <Text style={styles.label}>
+          User Name <Text style={styles.required}>*</Text>
         </Text>
         <View style={styles.input}>
           <TextInput
@@ -65,9 +66,9 @@ const LoginPage = ({navigation}) => {
           <EvilIcon name="user" size={30} color="#000" style={styles.icon} />
         </View>
       </View>
-      <View style={styles.inputWrapper}>
-        <Text style={{paddingHorizontal: 10}}>
-          Password<Text style={{color: 'red'}}>*</Text>
+      <View style={styles.inputContainer}>
+        <Text style={styles.label}>
+          Password <Text style={styles.required}>*</Text>
         </Text>
         <View style={styles.input}>
           <TextInput
@@ -88,10 +89,12 @@ const LoginPage = ({navigation}) => {
           </TouchableOpacity>
         </View>
       </View>
-      <TouchableOpacity style={styles.submitbtn} onPress={handleLogin}>
-        <Text style={{color: '#fff', textAlign: 'center', fontWeight: 'bold'}}>
-          Submit
-        </Text>
+      <TouchableOpacity
+        style={styles.submitBtn}
+        onPress={handleLogin}
+        accessible
+        accessibilityLabel="Submit Button">
+        <Text style={styles.submitText}>Submit</Text>
       </TouchableOpacity>
     </ScrollView>
   );
@@ -101,50 +104,73 @@ export default LoginPage;
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     backgroundColor: '#fff',
+    paddingHorizontal: 20,
+    paddingBottom: 30,
   },
   image: {
-    resizeMode: 'cover',
-    justifyContent: 'center',
     width: '100%',
     height: 250,
+    justifyContent: 'center',
     backgroundColor: '#1B1824',
+  },
+  overlay: {
+    paddingHorizontal: 20,
   },
   title: {
     color: '#fff',
-    fontSize: 40,
+    fontSize: 32,
     fontWeight: 'bold',
-    textAlign: 'center',
-    padding: 10,
+    marginVertical: 5,
+  },
+  highlight: {
+    color: '#F2D56A',
   },
   logo: {
-    height: 190,
-    width: 380,
+    height: 100,
     resizeMode: 'contain',
     alignSelf: 'center',
-    marginBottom: 30,
-    // borderWidth:1,
+    marginVertical: 20,
   },
-  inputWrapper: {
-    width: '75%',
-    alignSelf: 'center',
+  inputContainer: {
+    marginBottom: 20,
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#333',
+    marginBottom: 5,
+  },
+  required: {
+    color: 'red',
   },
   input: {
     flexDirection: 'row',
-    alignSelf: 'center',
-    justifyContent: 'space-between',
+    alignItems: 'center',
     backgroundColor: '#DCDFE5',
-    margin: 20,
-    borderRadius: 10,
-    padding: 10,
-    width: '100%',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
   },
-  submitbtn: {
+  textInput: {
+    flex: 1,
+    fontSize: 16,
+    color: '#000',
+  },
+  icon: {
+    marginLeft: 5,
+  },
+  submitBtn: {
     backgroundColor: '#1B1824',
-    borderRadius: 10,
-    width: '30%',
-    padding: 20,
-    alignSelf: 'center',
+    borderRadius: 8,
+    padding: 15,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  submitText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });

@@ -1,13 +1,28 @@
 import React, {useEffect} from 'react';
-import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  ImageBackground,
+} from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {useTheme} from '../context/ThemeProvider';
 import gifSource from '../assets/prompt.gif';
 import FastImage from 'react-native-fast-image';
 import {CommonActions} from '@react-navigation/native';
+import {Dimensions} from 'react-native';
+import bgImg from '../assets/backgroundPrompt.png';
 
 const PromptPage = ({navigation, route}) => {
-  const {isCheckoutMode, timing, id} = route.params || {};
+  // const {isCheckoutMode, timing, id} = route.params || {};
+  const {timing, id} = route.params || {};
+  const isCheckoutMode = false;
+
+
+
+  const {width, height} = Dimensions.get('window');
+  const isPortrait = height > width;
   // const {timing, id} = route.params || {};
   // const isCheckoutMode = false;
 
@@ -45,10 +60,32 @@ const PromptPage = ({navigation, route}) => {
           routes: [{name: 'Welcome'}],
         }),
       );
-    }, 5000);
+    }, 100000);
 
     return () => clearTimeout(timer);
   }, [navigation]);
+
+  const contentStyle = {
+    marginTop: isPortrait ? '15%' : '8%',
+    height: isPortrait ? '50%' : '82%',
+    width: '100%',
+    flex: 1,
+    flexDirection: isPortrait ? 'column' : 'row', // Use isPortrait here
+    justifyContent: 'space-around',
+    alignItems: 'center',
+  };
+
+  const infoWrapper = {
+    backgroundColor: 'white',
+    borderRadius: 25,
+    marginTop: isPortrait ? 50 : 0,
+    height: isPortrait ? '50%' : '70%',
+    width: isPortrait ? '80%' : '40%',
+    alignItems: 'center',
+    flex: 0,
+    justifyContent: 'center',
+  };
+
   return (
     <View style={styles.container}>
       {/* Top Buttons */}
@@ -75,97 +112,105 @@ const PromptPage = ({navigation, route}) => {
         </TouchableOpacity>
       </View>
       {/* Top Buttons */}
-      <View style={styles.content}>
-        <View
-          style={[
-            styles.cameraWrapper,
-            {borderColor: isCheckoutMode ? '#dd2726' : '#17a24a'},
-          ]}>
-          <FastImage
-            source={gifSource} // Use FastImage for the GIF
-            style={styles.gif}
-            resizeMode={FastImage.resizeMode.stretch} // Adjust resizeMode as needed
-          />
-        </View>
-
-        <View
-          style={[
-            styles.infoWrapper,
-            {
-              backgroundColor: isCheckoutMode ? '#dd2726' : '#17a24a',
-            },
-          ]}>
+      <ImageBackground source={bgImg} resizeMode="cover">
+        <View style={contentStyle}>
           <View
             style={[
-              styles.retakeButton,
+              styles.cameraWrapper,
+              {borderColor: isCheckoutMode ? '#dd2726' : '#17a24a'},
+            ]}>
+            <FastImage
+              source={gifSource} // Use FastImage for the GIF
+              style={styles.gif}
+              resizeMode={FastImage.resizeMode.stretch} // Adjust resizeMode as needed
+            />
+          </View>
+
+          <View
+            style={[
+              infoWrapper,
               {
                 backgroundColor: isCheckoutMode ? '#dd2726' : '#17a24a',
-                position: 'relative',
               },
             ]}>
-            <Text
-              style={{
-                textAlign: 'center',
-                fontSize: 36,
-                color: 'white',
-                marginBottom: 10,
-              }}>
-              {isCheckoutMode ? 'Thankyou' : 'Welcome'}
-            </Text>
             <View
-              style={{
-                flexDirection: 'row',
-                flex: 0,
-                justifyContent: 'space-around',
-                width: '100%',
-              }}>
-              <View style={{marginTop: 20}}>
-                <Text style={styles.buttonLabel}>User ID:</Text>
-                <Text style={styles.buttonLabel}>Date:</Text>
-                <Text style={styles.buttonLabel}>Time:</Text>
-              </View>
-              <View style={{marginTop: 20}}>
-                <Text style={styles.buttonText}>{id}</Text>
-                <Text style={styles.buttonText}>{formattedDate}</Text>
-                <Text style={styles.buttonText}>{formattedTime}</Text>
-              </View>
-            </View>
-            <View
-              style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+              style={[
+                styles.retakeButton,
+                {
+                  // backgroundColor: isCheckoutMode ? '#dd2726' : '#17a24a',
+                  backgroundColor: 'white',
+                  position: 'relative',
+                },
+              ]}>
               <Text
                 style={{
                   textAlign: 'center',
-                  fontSize: 26,
-                  color: 'white',
-                  marginTop: 20,
+                  fontSize: 36,
+                  color: '#65696c',
+                  marginBottom: 10,
+                  fontWeight:'800',
                 }}>
-                Have a nice day!!!
+                {isCheckoutMode ? 'Thankyou' : 'Welcome'}
               </Text>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  flex: 0,
+                  justifyContent: 'space-around',
+                  width: '100%',
+                }}>
+                <View style={{marginTop: 20}}>
+                  <Text style={styles.buttonLabel}>Employee ID:</Text>
+                  <Text style={styles.buttonLabel}>Date:</Text>
+                  <Text style={styles.buttonLabel}>Time:</Text>
+                </View>
+                <View style={{marginTop: 20}}>
+                  <Text style={styles.buttonText}>{id}</Text>
+                  <Text style={styles.buttonText}>{formattedDate}</Text>
+                  <Text style={styles.buttonText}>{formattedTime}</Text>
+                </View>
+              </View>
+              <View
+                style={{
+                  flex: 1,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}>
+                <Text
+                  style={{
+                    textAlign: 'center',
+                    fontSize: 26,
+                    color: '#65696c',
+                    marginTop: 20,
+                    fontWeight:'600',
+                  }}>
+                  Have a nice day!!!
+                </Text>
+              </View>
             </View>
           </View>
         </View>
-      </View>
+      </ImageBackground>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  content: {
-    marginTop: '8%',
-    height: '82%',
-    width: '100%',
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    // borderWidth:2,
-  },
   container: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.04)',
+    backgroundColor: '#f0f4f7',
+
+    width: '100%',
+    height: '100%',
   },
+  // shadowProp: {
+  //   shadowColor: 'rgba(0,0,0,1)',
+  //   shadowOffset: {width: 10, height: 10},
+  //   shadowOpacity: 0.8,
+  //   shadowRadius: 10,
+  // },
   topButtonsContainer: {
     position: 'absolute',
     width: '100%',
@@ -228,20 +273,10 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  infoWrapper: {
-    backgroundColor: 'white',
-    // paddingVertical: 12,
-    // paddingHorizontal: 40,
-    borderRadius: 25,
-    height: '70%',
-    width: '40%',
-    alignItems: 'center',
-    flex: 0,
-    justifyContent: 'center',
-  },
+
   retakeButton: {
-    borderWidth: 3,
-    borderColor: 'white',
+    borderWidth: 8,
+    borderColor: 'rgba(0,0,0,0.5)',
     borderRadius: 25,
     height: '95%',
     width: '95%',
@@ -252,15 +287,15 @@ const styles = StyleSheet.create({
     fontSize: 36,
   },
   buttonText: {
-    color: 'white',
+    color: 'black',
     fontSize: 20,
     marginBottom: 20,
-    fontWeight:'700',
+    fontWeight: '500',
   },
   buttonLabel: {
-    color: 'white',
+    color: '#65696c',
     fontSize: 20,
-    fontWeight: '900',
+    fontWeight: '700',
     marginBottom: 20,
   },
   capturedImageContainer: {

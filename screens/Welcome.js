@@ -12,15 +12,14 @@ import Icon3 from 'react-native-vector-icons/MaterialCommunityIcons';
 import Icon4 from 'react-native-vector-icons/Feather';
 import Icon2 from 'react-native-vector-icons/SimpleLineIcons';
 import {useTheme} from '../context/ThemeProvider';
-import {SettingsContext} from '../context/SettingsProvider'; // Import your context
-
+import {SettingsContext} from '../context/SettingsProvider';
 const WelcomeScreen = ({navigation}) => {
-  const {isInternetConnected} = useContext(SettingsContext); // Access the internet connection state
+  const {isInternetConnected} = useContext(SettingsContext);
   const {theme, toggleTheme} = useTheme();
   const images = [
-    'https://wallpaperaccess.com/full/189167.jpg',
-    'https://www.pixelstalk.net/wp-content/uploads/images1/City-Merlion-Park-Singapore-Wallpaper-1920x1080.jpg',
-    'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&w=1000&q=80',
+    require('../assets/slides/slide1.jpg'),
+    require('../assets/slides/slide2.jpg'),
+    require('../assets/slides/slide3.jpeg'),
   ];
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const isDarkTheme = theme.buttonText === 'black';
@@ -30,36 +29,36 @@ const WelcomeScreen = ({navigation}) => {
     }, 3000);
 
     return () => clearInterval(interval);
-  }, [images.length]);
+  }, [images.length,isInternetConnected]);
 
   return (
     <ImageBackground
-      source={{uri: images[currentImageIndex]}}
+      source={images[currentImageIndex]}
       style={styles.background}
       imageStyle={styles.backgroundImage}>
       <StatusBar hidden={true} />
       {/* <View style={styles.header}> */}
-        <View style={[styles.networkDisplay, {backgroundColor: theme.button}]}>
-          <Icon4
-            name={isInternetConnected ? 'wifi' : 'wifi-off'} // Change this line
-            size={30}
-            color={theme.icon}
-          />
-        </View>
-        <TouchableOpacity
-          style={[styles.themeToggleButton, {backgroundColor: theme.button}]}
-          onPress={toggleTheme}>
-          <Icon
-            name={isDarkTheme ? 'moon-outline' : 'sunny-outline'} // Change this line
-            size={30}
-            color={theme.icon}
-          />
-        </TouchableOpacity>
-        <TouchableOpacity
+      <View style={[styles.networkDisplay, {backgroundColor: theme.button}]}>
+        <Icon4
+          name={isInternetConnected ? 'wifi' : 'wifi-off'} // Change icon based on connection status
+          size={30}
+          color={theme.icon}
+        />
+      </View>
+      <TouchableOpacity
+        style={[styles.themeToggleButton, {backgroundColor: theme.button}]}
+        onPress={toggleTheme}>
+        <Icon
+          name={isDarkTheme ? 'moon-outline' : 'sunny-outline'} // Change this line
+          size={30}
+          color={theme.icon}
+        />
+      </TouchableOpacity>
+      {/* <TouchableOpacity
           style={[styles.logButton, {backgroundColor: theme.button}]}
           onPress={() => navigation.navigate('LogsPage')}>
           <Icon3 name="code-json" size={30} color={theme.icon} />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       {/* </View> */}
       <View style={styles.wrapper}>
         <View style={[styles.greetingCon]}>
@@ -89,13 +88,13 @@ const WelcomeScreen = ({navigation}) => {
             </TouchableOpacity>
           </View>
         </View>
-        <View style={styles.datawrapper}>
+        {/* <View style={styles.datawrapper}>
           <TouchableOpacity
             style={[styles.iconWrapper, {backgroundColor: theme.button}]}
             onPress={() => navigation.navigate('DbView')}>
             <Icon name="newspaper-outline" size={30} color={theme.icon} />
           </TouchableOpacity>
-        </View>
+        </View> */}
 
         <View style={[styles.iconContainer, {backgroundColor: theme.button}]}>
           <TouchableOpacity
@@ -114,7 +113,7 @@ const WelcomeScreen = ({navigation}) => {
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.iconButton}
-            onPress={() => navigation.navigate('AdminPage')}>
+            onPress={() => navigation.navigate('test')}>
             <Icon3
               name="shield-account-variant-outline"
               size={30}
@@ -233,8 +232,8 @@ const styles = StyleSheet.create({
   },
   logButton: {
     position: 'absolute',
-    bottom: 200,
-    right: 20,
+    bottom: '13%',
+    right: 160,
     zIndex: 100,
     backgroundColor: '#00b4d8',
     paddingVertical: 16,

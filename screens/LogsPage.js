@@ -4,318 +4,111 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  SectionList,
+  FlatList,
+  Image,
 } from 'react-native';
-import {createTable, getLogs} from '../services/dbService';
+import {getLogs} from '../services/dbService';
 import Icon from 'react-native-vector-icons/Ionicons';
-import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {ActivityIndicator} from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
-
+import Icon2 from 'react-native-vector-icons/Entypo';
+import Icon3 from 'react-native-vector-icons/AntDesign';
 const LogsPage = ({navigation}) => {
-  const [masterData, setMasterData] = useState([]);
-  const [isSyncingUser, setIsSyncingUser] = useState(false);
-
-  const [isUserTableExpanded, setIsUserTableExpanded] = useState(false);
-  const [isMasterTableExpanded, setIsMasterTableExpanded] = useState(false);
-  const [isNewDataTableExpanded, setIsNewDataTableExpanded] = useState(false);
-
-  const displayedMasterData = isMasterTableExpanded
-    ? masterData
-    : masterData && Array.isArray(masterData)
-    ? masterData.slice(0, 10)
-    : []; // Ensure masterData is an array
+  const [logs, setLogs] = useState([]);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   useEffect(() => {
-    const loadData = async () => {
-      createTable(); // Keep this if you still need to create the table
-
+    const fetchLogs = async () => {
       try {
-        getLogs(fetchingMasterData => {
-          console.log('Fetched Master Data:', fetchingMasterData); // Log fetched data
-          setMasterData(fetchingMasterData); // Update state with fetched data
+        setIsSyncing(true);
+        getLogs(data => {
+          setLogs(data);
+          setIsSyncing(false);
         });
       } catch (error) {
-        console.error('Error fetching master data:', error);
+        console.error('Error fetching logs:', error);
+        setIsSyncing(false);
       }
     };
 
-    loadData();
+    fetchLogs();
   }, []);
 
   const formatDate = isoString => {
     const date = new Date(isoString);
-
-    const options = {
+    return date.toLocaleString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
-      second: '2-digit',
-      hour12: false,
-    };
-    const formattedDate = date.toLocaleString('en-US', options);
-
-    const [month, day, year, time] = formattedDate.split(/, | /);
-
-    const suffix =
-      day.endsWith('1') && day !== '11'
-        ? 'st'
-        : day.endsWith('2') && day !== '12'
-        ? 'nd'
-        : day.endsWith('3') && day !== '13'
-        ? 'rd'
-        : 'th';
-
-    return `${month} ${day}${suffix}, ${year} at ${time}`;
+      hour12: true,
+    });
   };
 
-  const sections = [
-    {
-      title: 'Log Data',
-      data: [{isHeader: true}, ...displayedMasterData],
-    },
-  ];
-
-  const renderExpandButton = (isExpanded, setExpanded) => (
-    <View style={styles.expandView}>
-      <TouchableOpacity
-        style={styles.expandButton}
-        onPress={() => setExpanded(!isExpanded)}>
-        <Icon name={isExpanded ? 'remove' : 'add'} size={30} color="#00b4d8" />
-        <Text style={styles.expandButtonText}>
-          {isExpanded ? 'Show Less' : 'Show More'}
-        </Text>
-      </TouchableOpacity>
-    </View>
-  );
-
-  const renderItem = ({item, section}) => {
-    if (section.title === 'Log Data') {
-      if (item.isHeader) {
-        return renderMasterTableHeader();
-      }
-
-      return (
-        <View style={styles.tableRow}>
-          <Text style={styles.tableCell}>{item.id}</Text>
-          <Text style={styles.tableCell}>{item.employeeid}</Text>
-          <Text style={styles.tableCell}>
-            {item.operation === '1'
-              ? 'Check In'
-              : item.operation === '0'
-              ? 'Check Out'
-              : 'Unknown Operation'}
-          </Text>
-          <Text style={styles.tableCell}>{item.response}</Text>
-          <Text style={styles.tableCell}>{item.message}</Text>
-          <Text style={styles.tableCell}>{formatDate(item.timing)}</Text>
+  const renderItem = ({item}) => {
+    const borderColor = item.response === 'success' ? 'green' : 'red';
+    return (
+      <View style={[dynamicCard, {borderLeftColor: borderColor}]}>
+        <View style={styles.cardContent}>
+          <Text style={styles.title}>{item.message}</Text>
+          <Text style={styles.subtitle}>{item.response}</Text>
+          <Text style={styles.description}>Employee ID: {item.employeeid}</Text>
+          <Text style={styles.date}>{formatDate(item.timing)}</Text>
         </View>
-      );
-    }
-
-    return null;
-  };
-  const renderSectionFooter = ({section}) => {
-    if (section.data.length > 1) {
-      if (section.title === 'Offline Employee Data( Checkin / Checkout )') {
-        return renderExpandButton(isUserTableExpanded, setIsUserTableExpanded);
-      } else if (section.title === 'Log Data') {
-        return renderExpandButton(
-          isMasterTableExpanded,
-          setIsMasterTableExpanded,
-        );
-      } else if (section.title === 'Synced Server Data List') {
-        return renderExpandButton(
-          isNewDataTableExpanded,
-          setIsNewDataTableExpanded,
-        );
-      }
-    }
-    return null;
+      </View>
+    );
   };
 
-  const renderMasterTableHeader = () => (
-    <View style={[styles.tableHeader, styles.masterTableHeader]}>
-      <Text style={styles.tableHeaderCell}>Id</Text>
-      <Text style={styles.tableHeaderCell}>Employee ID</Text>
-      <Text style={styles.tableHeaderCell}>Operation</Text>
-      <Text style={styles.tableHeaderCell}>Status</Text>
-      <Text style={styles.tableHeaderCell}>Message</Text>
-      <Text style={styles.tableHeaderCell}>Timing</Text>
-    </View>
-  );
-  const renderSectionHeader = ({section: {title}}) => (
-    <Text style={styles.header}>{title}</Text>
-  );
+  const dynamicCard = {
+    flexDirection: 'row',
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 10,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 3,
+    borderLeftWidth: 6,
+  };
 
   return (
-    <GestureHandlerRootView style={{flex: 1}}>
-      <View style={styles.container}>
-        <View style={styles.topButtonsContainer}>
-          <TouchableOpacity
-            style={styles.topButtonBack}
-            onPress={() => navigation.goBack()}>
-            <Icon name="arrow-back" size={35} color={'#00b4d8'} />
-          </TouchableOpacity>
-          <Text style={styles.titleText}>Log Data</Text>
-          <View>{/* <Text></Text> */}</View>
+    <View style={styles.container}>
+      <View style={[styles.topButtonsContainer, {backgroundColor: 'white'}]}>
+        <TouchableOpacity
+          style={styles.topButtonBack}
+          onPress={() => navigation.goBack()}>
+          <Icon name="arrow-back" size={35} color={'#00b4d8'} />
+        </TouchableOpacity>
+        <View style={styles.header}>
+          <Text style={[styles.titleText]}>Logs</Text>
         </View>
-
-        {isSyncingUser && (
-          <View style={styles.loadingOverlay}>
-            <ActivityIndicator size="large" color="#00b4d8" />
-            <Text style={styles.loadingText}>Syncing Data...</Text>
-          </View>
-        )}
-        <SafeAreaView style={styles.mainContent}>
-          <View>
-            <SectionList
-              style={{
-                borderRadius: 10,
-                marginTop: 10,
-                marginHorizontal: 5,
-                paddingHorizontal: 20,
-                backgroundColor: 'white',
-                position: 'relative',
-              }}
-              sections={sections}
-              keyExtractor={(item, index) => {
-                if (item.isHeader) {
-                  return `header-${index}`;
-                }
-                return item.userid
-                  ? `${item.userid}-${index}` // Combine userid with index
-                  : `${item.masterId}-${index}`; // Combine masterId with index
-              }}
-              renderItem={renderItem}
-              renderSectionHeader={renderSectionHeader}
-              renderSectionFooter={renderSectionFooter} // Add this line to render the footer
-            />
-          </View>
-        </SafeAreaView>
+        <View style={styles.topButtonForward}>{/** */}</View>
       </View>
-    </GestureHandlerRootView>
+      {isSyncing && (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#00b4d8" />
+          <Text style={styles.loadingText}>Loading Logs...</Text>
+        </View>
+      )}
+
+      <FlatList
+        data={logs}
+        renderItem={renderItem}
+        keyExtractor={item => item.id.toString()}
+        contentContainerStyle={styles.list}
+      />
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  expandView: {
-    padding: 10,
-    alignItems: 'flex-end',
-    justifyContent: 'flex-end',
-  },
-  expandButton: {
-    width: '10%',
-    paddingVertical: 2,
-    paddingHorizontal: 5,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-  },
-  expandButtonText: {
-    marginLeft: 5,
-    color: '#00b4d8',
-    fontSize: 16,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center', // Aligns items vertically centered
-    backgroundColor: '#00b4d8',
-    paddingHorizontal: 15,
-    paddingVertical: 7,
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    borderRadius: 6,
-  },
-  buttonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginRight: 10,
-    color: 'white',
-  },
-  userTableHeader: {
-    backgroundColor: '#d1e7dd', // Light green for user table header
-  },
-  masterTableHeader: {
-    backgroundColor: '#E0D0C1', // Light blue for master data table header
-  },
-  newTableHeader: {
-    backgroundColor: '#ffeeba', // Light yellow for synced server data table header
-  },
-  loadingOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 1,
-  },
-  loadingText: {
-    marginTop: 10,
-    color: '#00b4d8',
-    fontSize: 16,
-  },
-  loadingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginVertical: 20,
-  },
-  syncPopup: {
-    position: 'absolute',
-    right: '0%',
-    top: 45,
-    transform: [{translateX: 0}],
-    backgroundColor: '#00b4d8',
-    padding: 10,
-    borderRadius: 5,
-    zIndex: 1,
-  },
-  syncText: {
-    color: 'white',
-    textAlign: 'center',
-  },
-  titleWrapper: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  container: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.04)',
-  },
-  mainContent: {
-    marginTop: 110,
-  },
-  topButtonsContainer: {
-    position: 'absolute',
-    width: '100%',
-    top: 0,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    zIndex: 1,
-    // borderWidth: 2,
-    // borderColor: 'red',
-    padding: 20,
-    backgroundColor: 'white',
-  },
   titleText: {
     color: '#00b4d8',
     fontSize: 56,
     fontWeight: '500',
-  },
-  topButtonForward: {
-    backgroundColor: '#00b4d8',
-    paddingVertical: 16,
-    paddingHorizontal: 16,
-    borderRadius: 50,
-    borderWidth: 2,
-    borderColor: '#00b4d8',
   },
   topButtonBack: {
     backgroundColor: 'transparent',
@@ -331,31 +124,66 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     marginBottom: 10,
   },
-  table: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    // marginBottom: 20,
-    // padding:10,
-  },
-  tableHeader: {
+  topButtonsContainer: {
+    width: '100%',
+    top: 0,
     flexDirection: 'row',
-    backgroundColor: '#f2f2f2',
-    borderBottomWidth: 1,
-    borderColor: '#ccc',
+    justifyContent: 'space-between',
+    zIndex: 1,
+    padding: 20,
+    alignItems: 'center',
+    backgroundColor: 'white',
   },
-  tableHeaderCell: {
+  container: {
     flex: 1,
-    padding: 10,
+    backgroundColor: '#f0f4f7',
+  },
+
+  headerText: {
+    color: '#fff',
+    fontSize: 20,
     fontWeight: 'bold',
   },
-  tableRow: {
-    flexDirection: 'row',
-    borderBottomWidth: 1,
-    borderColor: '#ccc',
-  },
-  tableCell: {
+  loadingContainer: {
     flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 10,
+    color: '#00b4d8',
+    fontSize: 16,
+  },
+  list: {
     padding: 10,
+  },
+  icon: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    marginRight: 15,
+  },
+  cardContent: {
+    flex: 1,
+  },
+  title: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  subtitle: {
+    fontSize: 14,
+    color: '#666',
+  },
+  description: {
+    fontSize: 12,
+    color: '#999',
+    marginTop: 5,
+  },
+  date: {
+    fontSize: 12,
+    color: '#0077b6',
+    marginTop: 5,
   },
 });
 

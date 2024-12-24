@@ -105,11 +105,11 @@ const AdminPage = ({navigation}) => {
           </Text>
           <Text style={styles.tableCell}>
             <TouchableOpacity
-                    style={styles.row}
-                    onPress={() => console.log('Create new Customer')}>
-                      <Text style={[styles.editText]}>Edit</Text>
-                    <Icon2 name="user-pen" size={14} color="white" />
-                  </TouchableOpacity>
+              style={styles.row}
+              onPress={() => console.log('Create new Customer')}>
+              <Text style={[styles.editText]}>Edit</Text>
+              <Icon2 name="user-pen" size={14} color="white" />
+            </TouchableOpacity>
           </Text>
         </View>
       );
@@ -250,7 +250,7 @@ const styles = StyleSheet.create({
     // top: 10,
     // right: 210,
     borderRadius: 6,
-    alignSelf:'center',
+    alignSelf: 'center',
   },
   editText: {
     fontSize: 14,
@@ -326,7 +326,8 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.04)',
+    backgroundColor: '#f0f4f7',
+
   },
   mainContent: {
     marginTop: 110,
@@ -342,6 +343,7 @@ const styles = StyleSheet.create({
     // borderColor: 'red',
     padding: 20,
     backgroundColor: 'white',
+    alignItems: 'center',
   },
   titleText: {
     color: '#00b4d8',

@@ -161,28 +161,32 @@ const VisitorList = ({navigation}) => {
         )}
         <SafeAreaView style={styles.mainContent}>
           <View>
-            <SectionList
-              style={{
-                borderRadius: 10,
-                marginTop: 10,
-                marginHorizontal: 5,
-                paddingHorizontal: 20,
-                backgroundColor: 'white',
-                position: 'relative',
-              }}
-              sections={sections}
-              keyExtractor={(item, index) => {
-                if (item.isHeader) {
-                  return `header-${index}`;
-                }
-                return item.userid
-                  ? `${item.userid}-${index}` // Combine userid with index
-                  : `${item.masterId}-${index}`; // Combine masterId with index
-              }}
-              renderItem={renderItem}
-              renderSectionHeader={renderSectionHeader}
-              renderSectionFooter={renderSectionFooter} // Add this line to render the footer
-            />
+            {masterData.length === 0 ? ( // Check if masterData is empty
+              <Text style={styles.noDataText}>No Data Available</Text> // Display message
+            ) : (
+              <SectionList
+                style={{
+                  borderRadius: 10,
+                  marginTop: 10,
+                  marginHorizontal: 5,
+                  paddingHorizontal: 20,
+                  backgroundColor: 'white',
+                  position: 'relative',
+                }}
+                sections={sections}
+                keyExtractor={(item, index) => {
+                  if (item.isHeader) {
+                    return `header-${index}`;
+                  }
+                  return item.userid
+                    ? `${item.userid}-${index}` // Combine userid with index
+                    : `${item.masterId}-${index}`; // Combine masterId with index
+                }}
+                renderItem={renderItem}
+                renderSectionHeader={renderSectionHeader}
+                renderSectionFooter={renderSectionFooter} // Add this line to render the footer
+              />
+            )}
           </View>
         </SafeAreaView>
       </View>
@@ -191,6 +195,12 @@ const VisitorList = ({navigation}) => {
 };
 
 const styles = StyleSheet.create({
+  noDataText: {
+    textAlign: 'center',
+    fontSize: 18,
+    color: '#00b4d8',
+    marginTop: 20,
+  },
   expandView: {
     padding: 10,
     alignItems: 'flex-end',
@@ -277,7 +287,8 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.04)',
+    backgroundColor: '#f0f4f7',
+
   },
   mainContent: {
     marginTop: 110,
@@ -293,6 +304,7 @@ const styles = StyleSheet.create({
     // borderColor: 'red',
     padding: 20,
     backgroundColor: 'white',
+    alignItems:'center',
   },
   titleText: {
     color: '#00b4d8',

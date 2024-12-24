@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -15,16 +15,33 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import Icon2 from 'react-native-vector-icons/MaterialCommunityIcons';
 import {Picker} from '@react-native-picker/picker';
 import AsyncStorage from '@react-native-async-storage/async-storage'; // Import AsyncStorage
+import Icon3 from 'react-native-vector-icons/MaterialCommunityIcons';
+import {CommonActions} from '@react-navigation/native';
+import {SettingsContext} from '../context/SettingsProvider';
 const Settings = ({navigation, route}) => {
   const {theme, toggleTheme} = useTheme();
-  const [language, setLanguage] = useState('English');
-  const [isPortrait, setIsPortrait] = useState(true);
-  const [brightness, setBrightness] = useState(50);
-  const [mediaQuality, setMediaQuality] = useState(50);
-  const [deviceIdentifier, setDeviceIdentifier] = useState('');
-  const [logSaveLocation, setLogSaveLocation] = useState('');
-  const [isInternetConnected, setIsInternetConnected] = useState(false);
-  const [isGPSConnected, setIsGPSConnected] = useState(false);
+  // const [language, setLanguage] = useState('English');
+  // const [isPortrait, setIsPortrait] = useState(true);
+  // const [brightness, setBrightness] = useState(50);
+  // const [mediaQuality, setMediaQuality] = useState(50);
+  // const [deviceIdentifier, setDeviceIdentifier] = useState('');
+  // const [logSaveLocation, setLogSaveLocation] = useState('');
+  // const [isInternetConnected, setIsInternetConnected] = useState(false);
+  // const [isGPSConnected, setIsGPSConnected] = useState(false);
+  const {
+    language,
+    setLanguage,
+    isInternetConnected,
+    setIsInternetConnected,
+    isGPSConnected,
+    setIsGPSConnected,
+    mediaQuality,
+    setMediaQuality,
+    logSaveLocation,
+    setLogSaveLocation,
+    deviceIdentifier,
+    setDeviceIdentifier,
+  } = useContext(SettingsContext); // Destructure context values
 
   const isDarkTheme = theme.buttonText === 'black';
   // const images = [
@@ -34,16 +51,9 @@ const Settings = ({navigation, route}) => {
   // ];
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  // useEffect(() => {
-  //   const interval = setInterval(() => {
-  //     setCurrentImageIndex(prevIndex => (prevIndex + 1) % images.length);
-  //   }, 3000);
-
-  //   return () => clearInterval(interval);
-  // }, [images.length]);
-
   const saveSettings = async () => {
     try {
+      // Save settings to AsyncStorage
       const settings = {
         language,
         isInternetConnected,
@@ -54,12 +64,10 @@ const Settings = ({navigation, route}) => {
       };
       await AsyncStorage.setItem('settings', JSON.stringify(settings));
       console.log('Settings saved:', settings);
-      alert('Settings saved successfully!');
     } catch (error) {
       console.error('Error saving settings:', error);
     }
   };
-
   return (
     // <ImageBackground
     //   source={{uri: images[currentImageIndex]}}
@@ -72,14 +80,19 @@ const Settings = ({navigation, route}) => {
             onPress={() => navigation.goBack()}>
             <Icon name="arrow-back" size={35} color={'#00b4d8'} />
           </TouchableOpacity>
-          <View
-          // style={styles.topButtonForward}
-          // onPress={toggleTheme}>
-          // <Icon
-          //   name={isDarkTheme ? 'moon-outline' : 'sunny-outline'}
-          //   size={35}
-          //   color={theme.icon}
-          ></View>
+          <TouchableOpacity
+            style={styles.topButtonForward}
+            onPress={async () => {
+              await saveSettings(); // Call the saveSettings function
+              navigation.dispatch(
+                CommonActions.reset({
+                  index: 0,
+                  routes: [{name: 'Welcome'}], // Navigate to Welcome screen
+                }),
+              );
+            }}>
+            <Icon name="checkmark" size={35} color={'white'} />
+          </TouchableOpacity>
         </View>
         <View style={styles.header}>
           <Text style={[styles.brandText, {color: '#00b4d8'}]}>Settings</Text>
@@ -197,6 +210,7 @@ const Settings = ({navigation, route}) => {
                     justifyContent: 'space-around',
                     alignItems: 'flex-end',
                     flexDirection: 'row',
+                    marginTop: 10,
                   }}>
                   <View
                     style={[
@@ -237,19 +251,26 @@ const Settings = ({navigation, route}) => {
                   Device Identifier
                 </Text>
                 <TextInput
-                  style={[styles.input, {backgroundColor: 'white'}]}
-                  value={deviceIdentifier}
+                  style={[styles.input, {backgroundColor: 'rgba(0,0,0,0.1)'}]}
+                  value={'675-237-478'}
                   on
                   ChangeText={setDeviceIdentifier}
                   placeholder="Enter Device Identifier"
                   keyboardType="numeric"
+                  editable={false}
                 />
+              </View>
+              <View style={styles.settingsOptions}>
+                <Text style={[styles.buttonText, {color: theme.buttonText}]}>
+                  Other Pages
+                </Text>
                 <View
                   style={{
                     justifyContent: 'space-around',
                     alignItems: 'flex-end',
                     flexDirection: 'row',
-                    marginTop: 10,
+                    // marginTop: 10,
+                    marginVertical: 20,
                   }}>
                   <TouchableOpacity
                     style={[
@@ -265,13 +286,41 @@ const Settings = ({navigation, route}) => {
                         alignItems: 'center',
                       },
                     ]}
-                    onPress={() => console.log('Syncing...')}>
+                    onPress={() => navigation.navigate('DbView')}>
                     <Text style={[styles.buttonText, {color: theme.text}]}>
-                      Sync Now
+                      Offline Records
                     </Text>
-                    <Icon name="sync" size={22} style={{color: theme.text}} />
+                    <Icon
+                      name="newspaper-outline"
+                      size={22}
+                      style={{color: theme.text}}
+                    />
                   </TouchableOpacity>
                   <TouchableOpacity
+                    style={[
+                      styles.syncButton,
+                      {
+                        backgroundColor: theme.button,
+                        borderWidth: 1,
+                        borderColor: theme.border,
+                      },
+                      {
+                        flexDirection: 'row',
+                        justifyContent: 'space-evenly',
+                        alignItems: 'center',
+                      },
+                    ]}
+                    onPress={() => navigation.navigate('LogsPage')}>
+                    <Text style={[styles.buttonText, {color: theme.text}]}>
+                      Logs Page
+                    </Text>
+                    <Icon3
+                      name="code-json"
+                      size={22}
+                      style={{color: theme.text}}
+                    />
+                  </TouchableOpacity>
+                  {/* <TouchableOpacity
                     style={[
                       styles.syncButton,
                       {
@@ -287,7 +336,7 @@ const Settings = ({navigation, route}) => {
                       Save
                     </Text>
                     <Icon name="checkmark" size={22} style={{color: 'white'}} />
-                  </TouchableOpacity>
+                  </TouchableOpacity> */}
                 </View>
               </View>
             </View>
@@ -323,7 +372,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     width: '100%',
     // padding:20,
-    backgroundColor: 'rgba(0,0,0,0.04)',
+    backgroundColor: '#f0f4f7',
   },
   content: {
     justifyContent: 'space-around',
@@ -371,7 +420,7 @@ const styles = StyleSheet.create({
   settingsWrapper: {
     width: '60%',
     // height: '97%',
-    paddingTop:10,
+    paddingTop: 10,
     margin: 10,
     marginTop: 20,
     borderRadius: 10,
@@ -406,16 +455,16 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     marginTop: 5,
     paddingHorizontal: 10,
+    borderRadius: 7,
   },
   syncButton: {
     padding: 10,
-    marginVertical: 10,
+    // marginVertical: 10,
     borderRadius: 5,
     alignItems: 'center',
     width: '21%',
     backgroundColor: '#00b4d8',
   },
-  // Add other styles as needed
 });
 
 export default Settings;

@@ -1,7 +1,7 @@
 import React from 'react';
 import {StyleSheet, View, Text, Image} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-
+const src = require('../assets/splashLogo.png');
 const SplashScreen = () => {
   return (
     <LinearGradient
@@ -18,9 +18,7 @@ const SplashScreen = () => {
         <Image
           //   source={require('../assets/logo.png')}
           //  // Replace with your logo path
-          source={{
-            uri: 'https://static.wixstatic.com/media/6d3b11_9b1d5b57dda54586b2f4e3376d0c78d0~mv2.png/v1/fill/w_834,h_626,al_c/6d3b11_9b1d5b57dda54586b2f4e3376d0c78d0~mv2.png',
-          }}
+          source={src}
           style={styles.logo}
         />
         <Text style={styles.text}>a UEMS product</Text>

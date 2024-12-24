@@ -15,9 +15,9 @@ const EmployeeCheckin = ({navigation, route}) => {
   const {isCheckoutMode} = route.params || {};
   const isDarkTheme = theme.buttonText === 'black';
   const images = [
-    'https://wallpaperaccess.com/full/189167.jpg',
-    'https://www.pixelstalk.net/wp-content/uploads/images1/City-Merlion-Park-Singapore-Wallpaper-1920x1080.jpg',
-    'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&w=1000&q=80',
+    require('../assets/slides/slide1.jpg'),
+    require('../assets/slides/slide2.jpg'),
+    require('../assets/slides/slide3.jpeg'),
   ];
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
@@ -31,7 +31,7 @@ const EmployeeCheckin = ({navigation, route}) => {
 
   return (
     <ImageBackground
-      source={{uri: images[currentImageIndex]}}
+    source={images[currentImageIndex]}
       style={styles.background}>
       {/* Overlay with Transparency */}
       <View style={styles.container}>
