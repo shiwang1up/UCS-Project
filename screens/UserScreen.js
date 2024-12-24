@@ -12,6 +12,7 @@ import {
   getMasterData,
   updateUserSyncStatus,
   fetchAndSaveMasterData,
+  logOperation,
 } from '../services/dbService';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
@@ -62,6 +63,7 @@ const UserScreen = ({navigation}) => {
     loadData();
   }, []);
   const fetchNewData = () => {
+    setIsSyncingUser(true);
     fetch('http://156.67.111.32:3020/api/Employee/transactions', {
       method: 'GET',
       headers: {
@@ -75,14 +77,16 @@ const UserScreen = ({navigation}) => {
         return response.json();
       })
       .then(data => {
-        // Sort the data based on lastTransactionDate in descending order
         const sortedData = data.sort((a, b) => {
           return new Date(b.opDateTime) - new Date(a.opDateTime);
         });
-        setNewData(sortedData); // Update the new data state with sorted data
+        setNewData(sortedData);
       })
       .catch(error => {
         console.error('Error fetching new data:', error);
+      })
+      .finally(() => {
+        setIsSyncingUser(false);
       });
   };
 
@@ -134,9 +138,18 @@ const UserScreen = ({navigation}) => {
         })
         .filter(Boolean);
 
-      console.log(payload, 'Payload is this for handleSync:User ');
+      console.log(payload, 'Payload is this for handleSync:User    ');
 
       if (payload.length === 0) {
+        const timing = new Date().toISOString();
+        // Log the message in the logs table
+        logOperation(
+          null,
+          'sync',
+          'No users to sync. Request list cannot be empty.',
+          'Sync operation',
+          timing,
+        );
         console.log('No users to sync. Request list cannot be empty.');
         setIsSyncingUser(false);
         return;
@@ -150,26 +163,45 @@ const UserScreen = ({navigation}) => {
         body: JSON.stringify(payload),
       })
         .then(response => {
+          // Log the HTTP response status
+          const timing = new Date().toISOString();
+          logOperation(
+            null,
+            'sync',
+            `HTTP response status: ${response.status}`,
+            'Sync operation',
+            timing,
+          );
+
           if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
           }
           return response.json();
         })
         .then(data => {
+          console.log(data, 'This is the response.......');
+
+          // Log the API response in the logs table
+          const timing = new Date().toISOString();
+          payload.forEach(user => {
+            logOperation(
+              user.employeeId,
+              user.op,
+              JSON.stringify(data),
+              'Sync operation',
+              timing,
+            );
+          });
+
           if (Array.isArray(data)) {
             data.forEach(item => {
               if (item.status === 'Success') {
                 updateUserSyncStatus(item.employeeId, true, success => {
                   if (!success) {
-                    // console.log(
-                    //   `Failed to update user ${item.userId} sync status.`,
-                    // );
+                    // console.log(`Failed to update user ${item.userId} sync status.`);
                   }
                 });
               } else if (item.status === 'Error') {
-                // console.log(
-                //   `Error for user ${item.employeeId}: ${item.status}`,
-                // );
                 updateUserSyncStatus(item.employeeId, true, success => {
                   if (!success) {
                   }
@@ -189,7 +221,17 @@ const UserScreen = ({navigation}) => {
         .then(() => {
           fetchNewData();
         })
-        .catch(error => {})
+        .catch(error => {
+          // Log the error in the logs table
+          const timing = new Date().toISOString();
+          logOperation(
+            null,
+            'sync',
+            `Error during sync: ${error.message}`,
+            'Sync operation',
+            timing,
+          );
+        })
         .finally(() => {
           setIsSyncingUser(false);
         });
@@ -408,7 +450,7 @@ const UserScreen = ({navigation}) => {
                   {/* <Icon name="sync" size={30} />
                    */}
                   <TouchableOpacity
-                    style={styles.row}
+                    style={[styles.row]}
                     onPress={() => handleSyncUser()}>
                     <Text style={[styles.buttonText]}>Sync</Text>
                     <Icon name="sync" size={22} color="white" />
@@ -529,7 +571,8 @@ const styles = StyleSheet.create({
   },
   titleText: {
     color: '#00b4d8',
-    fontSize: 36,
+    fontSize: 56,
+    fontWeight: '500',
   },
   topButtonForward: {
     backgroundColor: '#00b4d8',

@@ -45,7 +45,7 @@ const PromptPage = ({navigation, route}) => {
           routes: [{name: 'Welcome'}],
         }),
       );
-    }, 100000);
+    }, 5000);
 
     return () => clearTimeout(timer);
   }, [navigation]);

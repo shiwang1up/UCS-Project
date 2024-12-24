@@ -12,7 +12,12 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import {useTheme} from '../context/ThemeProvider';
 import {TextInput} from 'react-native-gesture-handler';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
-import {getLatestOperation, getUserById, saveUser,logOperation } from '../services/dbService';
+import {
+  getLatestOperation,
+  getUserById,
+  saveUser,
+  logOperation,
+} from '../services/dbService';
 
 const IdPass = ({navigation, route}) => {
   const {isCheckoutMode} = route.params || {};
@@ -51,14 +56,20 @@ const IdPass = ({navigation, route}) => {
   const handleSubmit = () => {
     if (!id) {
       const timing = new Date().toISOString();
-      logOperation(id, isCheckoutMode ? 0 : 1, 'not success', 'Please enter UserID', timing);
+      logOperation(
+        id,
+        isCheckoutMode ? 0 : 1,
+        'not success',
+        'Please enter UserID',
+        timing,
+      );
       Alert.alert('Error', 'Please enter UserID');
       return;
     }
-  
+
     const operation = isCheckoutMode ? 0 : 1;
     const timing = new Date().toISOString();
-  
+
     if (!isCheckoutMode) {
       // Check the latest operation before allowing check-in
       getLatestOperation(id, latestOperation => {
@@ -68,9 +79,9 @@ const IdPass = ({navigation, route}) => {
           Alert.alert('Error', message);
           return; // Prevent further execution
         }
-  
+
         // Proceed with check-in
-        saveUser (
+        saveUser(
           id,
           operation,
           timing,
@@ -100,18 +111,59 @@ const IdPass = ({navigation, route}) => {
           Alert.alert('Error', message);
           return; // Prevent further execution
         }
-  
+
         // Proceed with checkout
         getUserById(id, user => {
           if (user) {
             if (user.userid === id) {
-              saveUser (
+              // Parse checkInTime from text
+              const checkInTimeString = user.timing; // Assuming checkInTime is stored in the timing field
+              console.log('Raw Check-in Time:', checkInTimeString); // Log the raw value
+              const checkInTime = new Date(checkInTimeString); // Convert to Date object
+
+              // Validate checkInTime
+              if (isNaN(checkInTime.getTime())) {
+                const message =
+                  'Invalid check-in time. Please check your records.';
+                logOperation(id, operation, 'not success', message, timing);
+                Alert.alert('Error', message);
+                return; // Prevent further execution
+              }
+
+              const currentTime = new Date();
+              const timeDifference = (currentTime - checkInTime) / (1000 * 60); // Convert to minutes
+
+              // Debugging logs
+              console.log('Check-in Time:', checkInTime);
+              console.log('Current Time:', currentTime);
+              console.log('Time Difference (minutes):', timeDifference);
+
+              // change these 1 to 10
+              // Enforce the 10-minute rule
+              if (timeDifference < 1) {
+                const remainingTime = 1 - timeDifference;
+                const message = `You can only check out after 10 minutes of Check in. Please wait ${remainingTime.toFixed(
+                  0,
+                )} more minutes.`;
+                logOperation(id, operation, 'not success', message, timing);
+                Alert.alert('Error', message);
+                return; // Prevent further execution
+              }
+
+              // Proceed with checkout
+              saveUser(
                 id,
                 operation,
                 timing,
                 () => {
                   const successMessage = `Checkout time updated successfully !!\nOn ${timing}!`;
-                  logOperation(id, operation, 'success', successMessage, timing);
+                  logOperation(
+                    id,
+                    operation,
+                    'success',
+                    successMessage,
+                    timing,
+                  );
                   setIsCheckedIn(true);
                   navigation.navigate('PromptPage', {
                     isCheckoutMode: true,
@@ -121,19 +173,17 @@ const IdPass = ({navigation, route}) => {
                   });
                 },
                 errorMessage => {
-                  logOperation(id, operation, 'not success', 'Failed to update checkout time. Please try again.', timing);
-                  Alert.alert('Error', 'Failed to update checkout time. Please try again.');
+                  logOperation(
+                    id,
+                    operation,
+                    'not success',
+                    errorMessage,
+                    timing,
+                  );
+                  Alert.alert('Error', errorMessage);
                 },
               );
-            } else {
-              const message = 'Employee ID does not match. Please check your credentials.';
-              logOperation(id, operation, 'not success', message, timing);
-              Alert.alert('Error', message);
             }
-          } else {
-            const message = 'Employee not found. Please check your Employee ID.';
-            logOperation(id, operation, 'not success', message, timing);
-            Alert.alert('Error', message);
           }
         });
       });

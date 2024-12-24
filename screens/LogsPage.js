@@ -101,7 +101,13 @@ const LogsPage = ({navigation}) => {
         <View style={styles.tableRow}>
           <Text style={styles.tableCell}>{item.id}</Text>
           <Text style={styles.tableCell}>{item.employeeid}</Text>
-          <Text style={styles.tableCell}>{item.operation}</Text>
+          <Text style={styles.tableCell}>
+            {item.operation === '1'
+              ? 'Check In'
+              : item.operation === '0'
+              ? 'Check Out'
+              : 'Unknown Operation'}
+          </Text>
           <Text style={styles.tableCell}>{item.response}</Text>
           <Text style={styles.tableCell}>{item.message}</Text>
           <Text style={styles.tableCell}>{formatDate(item.timing)}</Text>
@@ -135,7 +141,7 @@ const LogsPage = ({navigation}) => {
       <Text style={styles.tableHeaderCell}>Id</Text>
       <Text style={styles.tableHeaderCell}>Employee ID</Text>
       <Text style={styles.tableHeaderCell}>Operation</Text>
-      <Text style={styles.tableHeaderCell}>Response</Text>
+      <Text style={styles.tableHeaderCell}>Status</Text>
       <Text style={styles.tableHeaderCell}>Message</Text>
       <Text style={styles.tableHeaderCell}>Timing</Text>
     </View>
@@ -186,7 +192,6 @@ const LogsPage = ({navigation}) => {
               renderItem={renderItem}
               renderSectionHeader={renderSectionHeader}
               renderSectionFooter={renderSectionFooter} // Add this line to render the footer
-             
             />
           </View>
         </SafeAreaView>
@@ -301,7 +306,8 @@ const styles = StyleSheet.create({
   },
   titleText: {
     color: '#00b4d8',
-    fontSize: 36,
+    fontSize: 56,
+    fontWeight: '500',
   },
   topButtonForward: {
     backgroundColor: '#00b4d8',

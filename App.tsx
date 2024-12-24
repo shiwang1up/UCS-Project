@@ -18,6 +18,7 @@ import {createLogsTable} from './services/dbService';
 import {SettingsProvider} from './context/SettingsProvider'; // Import your SettingsProvider
 import AdminPage from './screens/AdminPage';
 import LogsPage from './screens/LogsPage';
+import LoginPage from './screens/LoginPage';
 
 const Stack = createNativeStackNavigator();
 
@@ -43,6 +44,7 @@ const App = () => {
       <SettingsProvider>
         <NavigationContainer>
           <Stack.Navigator screenOptions={{headerShown: false}}>
+            <Stack.Screen name="Login" component={LoginPage} />
             <Stack.Screen name="Welcome" component={WelcomeScreen} />
             <Stack.Screen name="FaceRecog" component={FaceRecog} />
             <Stack.Screen name="IdPass" component={IdPass} />

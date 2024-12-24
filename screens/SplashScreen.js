@@ -5,7 +5,14 @@ import LinearGradient from 'react-native-linear-gradient';
 const SplashScreen = () => {
   return (
     <LinearGradient
-      colors={['#0000FF', '#1F1FFF', '#4949FF', '#7879FF', '#A3A3FF', '#BFBFFF']}
+      colors={[
+        '#0000FF',
+        '#1F1FFF',
+        '#4949FF',
+        '#7879FF',
+        '#A3A3FF',
+        '#BFBFFF',
+      ]}
       style={styles.container}>
       <View style={styles.logoContainer}>
         <Image
@@ -33,10 +40,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   logo: {
-    width: 400, // Set a width for the logo
-    height: 400, // Set a height for the logo
-    marginBottom: 20, // Keep the marginBottom as is
-    resizeMode: 'contain', // Optional: Adjust the image to fit within the dimensions
+    width: 400,
+    height: 400,
+    marginBottom: 20,
+    resizeMode: 'contain',
   },
   text: {
     fontSize: 24,

@@ -126,7 +126,6 @@ const addIsSyncedColumn = () => {
 };
 
 const saveUser = (userid, operation, timing, onSuccess, onError) => {
-  console.log(timing, 'Saved Timing in DB');
   const isSynced = false;
 
   db.transaction(tx => {
@@ -193,9 +192,6 @@ const updateUserSyncStatus = (userId, newStatus, callback) => {
       'UPDATE user_table SET isSynced = ? WHERE userid = ?',
       [newStatus, userId],
       () => {
-        console.log(
-          `User ${userId} sync status updated successfully to ${newStatus}.`,
-        );
         callback(true);
       },
       error => {

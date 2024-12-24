@@ -296,7 +296,8 @@ const styles = StyleSheet.create({
   },
   titleText: {
     color: '#00b4d8',
-    fontSize: 36,
+    fontSize: 56,
+    fontWeight: '500',
   },
   topButtonForward: {
     backgroundColor: '#00b4d8',

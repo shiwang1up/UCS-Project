@@ -103,6 +103,14 @@ const AdminPage = ({navigation}) => {
           <Text style={styles.tableCell}>
             {formatDate(item.lastTransactionDate)}
           </Text>
+          <Text style={styles.tableCell}>
+            <TouchableOpacity
+                    style={styles.row}
+                    onPress={() => console.log('Create new Customer')}>
+                      <Text style={[styles.editText]}>Edit</Text>
+                    <Icon2 name="user-pen" size={14} color="white" />
+                  </TouchableOpacity>
+          </Text>
         </View>
       );
     }
@@ -135,6 +143,7 @@ const AdminPage = ({navigation}) => {
       <Text style={styles.tableHeaderCell}>Employee Name</Text>
       <Text style={styles.tableHeaderCell}>Fingerprint Data</Text>
       <Text style={styles.tableHeaderCell}>Last Transaction Date</Text>
+      <Text style={styles.tableHeaderCell}>Action</Text>
     </View>
   );
   const renderSectionHeader = ({section: {title}}) => (
@@ -190,19 +199,18 @@ const AdminPage = ({navigation}) => {
                     alignSelf: 'flex-end',
                     alignItems: 'center',
                   }}>
-             
                   <TouchableOpacity
-                    style={styles.row}
+                    style={styles.row1}
                     onPress={() => console.log('Create new Customer')}>
                     <Text style={[styles.buttonText]}>Add Employee</Text>
                     <Icon2 name="user-plus" size={20} color="white" />
                   </TouchableOpacity>
-                  <TouchableOpacity
+                  {/* <TouchableOpacity
                     style={styles.row1}
                     onPress={() => console.log('Create new Customer')}>
                     <Text style={[styles.buttonText]}>Edit Employee</Text>
                     <Icon2 name="user-pen" size={20} color="white" />
-                  </TouchableOpacity>
+                  </TouchableOpacity> */}
                 </View>
               }
             />
@@ -236,12 +244,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center', // Aligns items vertically centered
     backgroundColor: '#00b4d8',
-    paddingHorizontal: 15,
+    paddingHorizontal: 6,
     paddingVertical: 7,
-    position: 'absolute',
-    top: 10,
-    right: 210,
+    // position: 'absolute',
+    // top: 10,
+    // right: 210,
     borderRadius: 6,
+    alignSelf:'center',
+  },
+  editText: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginRight: 10,
+    color: 'white',
   },
   row1: {
     flexDirection: 'row',
@@ -330,7 +345,8 @@ const styles = StyleSheet.create({
   },
   titleText: {
     color: '#00b4d8',
-    fontSize: 36,
+    fontSize: 56,
+    fontWeight: '500',
   },
   topButtonForward: {
     backgroundColor: '#00b4d8',
